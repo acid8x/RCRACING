@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">RC Racing</string>
+    <string name="imageView1">imageView1</string>
+    <string name="imageView2">imageView2</string>
+    <string name="imageView3">imageView3</string>
+    <string name="test">TEST</string>
+</resources>
