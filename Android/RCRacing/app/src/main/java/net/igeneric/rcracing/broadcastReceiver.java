@@ -4,47 +4,36 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 public class broadcastReceiver extends BroadcastReceiver {
-    private final static String TAG = broadcastReceiver.class.getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        final String action = intent.getAction();
-        switch (action) {
-            case BTService.ACTION_GATT_CONNECTED:
-                Log.i(TAG, action);
-                break;
-            case BTService.ACTION_GATT_DISCONNECTED:
-                Log.i(TAG, action);
-                break;
-            case BTService.ACTION_DATA_AVAILABLE:
-                final char[] array = intent.getCharArrayExtra(BTService.EXTRA_DATA);
-                String data = "";
-                int index = 0;
-                boolean read = false;
-                if (array != null) {
-                    for (char c : array) {
-                        if (!read && c > 48 && c < 58) read = true;
-                        if (read && c > 47 && c < 91) {
-                            data += c;
-                            index++;
-                            if (index == 3) {
-                                final char[] charArray = data.toCharArray();
-                                final int id = charArray[0] - 48;
-                                final char command = charArray[1];
-                                final int arg = charArray[2] - 48;
-                                if (id < 10 && command > 64 && arg < 10) dataHandle(id, command, arg);
-                                data = "";
-                                index = 0;
-                                read = false;
-                            }
+        if (intent.getAction().equals(BTService.ACTION_DATA_AVAILABLE)) {
+            final char[] array = intent.getCharArrayExtra(BTService.EXTRA_DATA);
+            String data = "";
+            int index = 0;
+            boolean read = false;
+            if (array != null) {
+                for (char c : array) {
+                    if (!read && c > 48 && c < 58) read = true;
+                    if (read && c > 47 && c < 91) {
+                        data += c;
+                        index++;
+                        if (index == 3) {
+                            final char[] charArray = data.toCharArray();
+                            final int id = charArray[0] - 48;
+                            final char command = charArray[1];
+                            final int arg = charArray[2] - 48;
+                            if (id < 10 && command > 64 && arg < 10) dataHandle(id, command, arg);
+                            data = "";
+                            index = 0;
+                            read = false;
                         }
                     }
                 }
-                if (MainActivity.hasFocus) context.sendBroadcast(new Intent("ACTION_UPDATE_UI"));
-                break;
+            }
+            if (MainActivity.hasFocus) context.sendBroadcast(new Intent("ACTION_UPDATE_UI"));
         }
     }
 
@@ -68,8 +57,7 @@ public class broadcastReceiver extends BroadcastReceiver {
                 p.addTotalKills();
                 break;
             case 'Z':
-                String message = "&" + id + "C" + MainActivity.raceType;
-                BTService.sendMessage(message);
+                BTService.sendMessage("&" + id + "C" + MainActivity.raceType);
                 break;
         }
         if (p.isFinish()) MainActivity.mWinnersList.add(id);

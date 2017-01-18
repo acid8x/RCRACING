@@ -42,10 +42,10 @@ PWMServo myservo;
 
 IRsend irsend;
 
-IRrecv *irrecvs[1];
+IRrecv *irrecvs[2];
 decode_results results;
 
-elapsedMillis tGun, tTurbo, tTurboFlash, tHasBeenShot, tHasBeenShotFlash, tRaceType, codeFlash, controllerUpdate, lastReceived;
+elapsedMillis tGun, tTurbo, tTurboFlash, tHasBeenShot, tHasBeenShotFlash, tRaceType, codeFlash, controllerUpdate;
 
 void setup() {
 	myservo.attach(Steering);
@@ -67,29 +67,28 @@ void setup() {
 	radio.setRetries(0, 15);
 	radio.setCRCLength(RF24_CRC_16);
 	radio.setPALevel(RF24_PA_MAX);
-	node_controller = THIS_NODE + 8;
+	node_controller = THIS_NODE + 010;
 	network.begin(Channel, THIS_NODE);
 	irrecvs[0] = new IRrecv(Receiver1);
 	irrecvs[0]->enableIRIn();
+	irrecvs[1] = new IRrecv(Receiver2);
+	irrecvs[1]->enableIRIn();
 }
 
 void loop() {
 	network.update();
 	nRF_receive();
-	if (lastReceived > 2000) sendHost('P', 0);
-	if (controllerConnected) {
-		if (raceType > 0) {
-			if (raceType > 1) checkDamageState();
-			if (raceType > 1) checkShootState();
-			checkTurboState();
-			checkIRState();
-		}
-		else checkRaceType();
-		if (controllerUpdate > 500) {
-			ledState[2] = B.getState();
-			controllerConnected = false;
-			if (!stopY) stopY = true;
-		}
+	if (raceType > 0) {
+		if (raceType > 1) checkDamageState();
+		if (raceType > 1) checkShootState();
+		checkTurboState();
+		checkIRState();
+	}
+	else checkRaceType();
+	if (controllerConnected && controllerUpdate > 500) {
+		ledState[2] = B.getState();
+		controllerConnected = false;
+		if (!stopY) stopY = true;
 	}
 	if (stopY) {
 		digitalWrite(FWRpin, HIGH);
@@ -103,10 +102,16 @@ void nRF_receive(void) {
 		RF24NetworkHeader header;
 		network.peek(header);
 		if (header.from_node == 0) {
-			lastReceived = 0;
-			hPayload p;
-			network.read(header, &p, sizeof(p));
-			handle_host(p.command, p.argument);
+			if (header.type == 65) {
+				unsigned int i;
+				network.read(header, &i, sizeof(i));
+				handle_host('C', 0);
+			}
+			else {
+				hPayload p;
+				network.read(header, &p, sizeof(p));
+				handle_host(p.command, p.argument);
+			}
 		}
 		else {
 			cPayload a;
@@ -197,12 +202,14 @@ void handle_host(char command, int argument) {
 void checkCode() {
 	if (raceType == 0 || !controllerConnected) {
 		if (codeFlash > 333) {
+			R.toggleState();
 			if (raceType == 0) G.toggleState();
 			if (!controllerConnected) B.toggleState();
 			else if (raceType == 0) B.setHigh();
 			codeFlash = 0;
 		}
 	}
+	else if (!R.getState()) R.setHigh();
 }
 
 void checkDamageState() {
@@ -240,6 +247,7 @@ void checkShootState() {
 		gunUse = 0;
 		irsend.sendSony(THIS_NODE + 10, 12);
 		irrecvs[0]->enableIRIn();
+		irrecvs[1]->enableIRIn();
 	}
 	else if (!gunReady && tGun > 3000) {
 		gunReady = true;
@@ -267,25 +275,36 @@ void checkTurboState() {
 }
 
 void checkIRState() {
-	int value = 0;
-	if (irrecvs[0]->decode(&results)) {
-		if (results.value < 16) value = results.value;
-		irrecvs[0]->resume();
-	}
-	if (raceType > 1 && value > 0) {
-		if (value < 10 && lastGate != value) {
-			lastGate = value;
-			sendHost('G', value);
+	int value[2] = { -1,-1 };
+	for (int i = 0; i < 2; i++) {
+		if (irrecvs[i]->decode(&results)) {
+			if (results.value < 16) value[i] = results.value;
+			irrecvs[i]->resume();
 		}
-		else {
-			value -= 10;
-			if (tHasBeenShot > 5000) {
-				tHasBeenShot = 0;
-				hasBeenShot = true;
-				stopY = true;
-				reverseStop = true;
-				sendHost('D', value);
-				getState();
+	}
+	int code = 0;
+	if (value[0] != -1 || value[1] != -1) {
+		if (value[1] == value[0]) code = value[0];
+		else if (value[0] == -1 && value[1] < 16) code = value[1];
+		else if (value[1] == -1 && value[0] < 16) code = value[0];
+	}
+	if (code > 0) {
+		if (raceType > 0 && raceType < 4) {
+			if (raceType > 1 && code > 10) {
+				if (tHasBeenShot > 5000) {
+					tHasBeenShot = 0;
+					hasBeenShot = true;
+					stopY = true;
+					reverseStop = true;
+					sendHost('D', code - 10);
+					getState();
+				}
+			}
+			else if (raceType < 3 && code < 10) {
+				if (lastGate != code) {
+					lastGate = code;
+					sendHost('G', code);
+				}
 			}
 		}
 	}
@@ -337,5 +356,11 @@ void setState() {
 void sendHost(char command, int value) {
 	hPayload p = { command,value };
 	RF24NetworkHeader header(0);
-	network.write(header, &p, sizeof(p));
+	int retry = 0;
+	while (true) {
+		if (network.write(header, &p, sizeof(p))) break;
+		else retry++;
+		if (retry == 5) break;
+		delay(1);
+	}
 }

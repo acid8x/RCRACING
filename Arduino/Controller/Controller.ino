@@ -65,7 +65,7 @@ void loop(void) {
 		readY();
 		timer2 = 0;
 		Payload a = { X,Y,LB,RB };
-		RF24NetworkHeader header(THIS_NODE - 8);
+		RF24NetworkHeader header(THIS_NODE - 010);
 		network.write(header, &a, sizeof(a));
 		if (!LB) LB = true;
 		if (!RB) RB = true;

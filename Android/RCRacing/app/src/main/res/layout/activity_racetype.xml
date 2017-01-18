@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/selRaceType"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:alpha="0">
+
+    <TextView
+        android:id="@+id/tvRaceTypeTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:background="#3333"
+        android:gravity="center"
+        android:text="@string/paramsRaceType"
+        android:textAppearance="@android:style/TextAppearance.Holo.Large"/>
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvRaceTypeTitle"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/radioButton"
+            style="@android:style/Widget.Holo.Light.CompoundButton.RadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:text="@string/r1"/>
+
+        <RadioButton
+            android:id="@+id/radioButton2"
+            style="@android:style/Widget.Holo.Light.CompoundButton.RadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:text="@string/r2"/>
+
+        <RadioButton
+            android:id="@+id/radioButton3"
+            style="@android:style/Widget.Holo.Light.CompoundButton.RadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:text="@string/r3"/>
+
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/buttonReturnRaceType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/tvRaceTypeTitle"
+        android:layout_below="@+id/radioGroup"
+        android:layout_margin="10dp"
+        android:background="@drawable/buttonarrow"/>
+
+    <Button
+        android:id="@+id/buttonNextRaceType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/tvRaceTypeTitle"
+        android:layout_below="@+id/radioGroup"
+        android:layout_margin="10dp"
+        android:scaleX="-1"
+        android:scaleY="-1"
+        android:background="@drawable/buttonarrow"/>
+
+</RelativeLayout>

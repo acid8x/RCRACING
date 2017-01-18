@@ -20,7 +20,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +33,7 @@ public class BTService extends Service {
     private static ScanSettings settings;
     private static List<ScanFilter> filters = new ArrayList<>();
     private static boolean mConnected = false;
+    private static List<String> messagesToSend = null;
 
     public final static String ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED";
@@ -67,7 +67,7 @@ public class BTService extends Service {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             if (!MainActivity.running) {
-                sendMessage("&1C0&2C0&3C0&4C0&5C0");
+                clearRaceType();
                 MainActivity.running = true;
             }
         }
@@ -75,7 +75,6 @@ public class BTService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             final String data = new String(characteristic.getValue());
-            Log.i("TEST", "Data Received: "+data);
             final char[] dataArray = data.toCharArray();
             final Intent intent = new Intent(ACTION_DATA_AVAILABLE);
             intent.putExtra(EXTRA_DATA, dataArray);
@@ -103,17 +102,32 @@ public class BTService extends Service {
     private final IBinder mBinder = new LocalBinder();
 
     public static void sendMessage(String str) {
-        boolean sent = false;
-        int retry = 0;
         if (mConnected) {
-            while(!sent) {
-                BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(UUID_BLE_HM10_SERVICE).getCharacteristic(UUID_BLE_HM10_RX_TX);
-                mBluetoothGattCharacteristic.setValue(str.getBytes());
-                sent = mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic);
-                if (retry > 4) break;
-                else retry++;
+            if (messagesToSend != null) {
+                String stringArray = "";
+                for (String string : messagesToSend) {
+                    if (string.equals(str)) messagesToSend.remove(string);
+                    else stringArray += string;
+                }
+                str += stringArray;
             }
+            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(UUID_BLE_HM10_SERVICE).getCharacteristic(UUID_BLE_HM10_RX_TX);
+            mBluetoothGattCharacteristic.setValue(str.getBytes());
+            if (!mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic)) {
+                if (messagesToSend == null) messagesToSend = new ArrayList<>();
+                messagesToSend.add(str);
+            } else if (messagesToSend != null) messagesToSend = null;
         }
+    }
+
+    public boolean clearRaceType() {
+        if (mConnected) {
+            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(UUID_BLE_HM10_SERVICE).getCharacteristic(UUID_BLE_HM10_RX_TX);
+            mBluetoothGattCharacteristic.setValue("#".getBytes());
+            while (true) if (mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic)) break;
+            return true;
+        }
+        return false;
     }
 
     // BLUETOOTH CONNECTION
@@ -132,7 +146,7 @@ public class BTService extends Service {
         if (mBluetoothGatt != null) return mBluetoothGatt.connect();
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         if (device == null) return false;
-        mBluetoothGatt = device.connectGatt(this, false, mBluetoothGattCallback);
+        mBluetoothGatt = device.connectGatt(this, true, mBluetoothGattCallback);
         return true;
     }
 
@@ -161,7 +175,7 @@ public class BTService extends Service {
         public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord) {
             if (device != null) {
                 try {
-                    if (device.getName().equals("RC_RACING")) {
+                    if (device.getName().equals("RCRACING")) {
                         connectTo(device.getAddress());
                     }
                 } catch (Exception e) {
@@ -177,7 +191,7 @@ public class BTService extends Service {
         public void onScanResult(int callbackType, final ScanResult result) {
             if (result.getDevice() != null) {
                 try {
-                    if (result.getDevice().getName().equals("RC_RACING")) {
+                    if (result.getDevice().getName().equals("RCRACING")) {
                         connectTo(result.getDevice().getAddress());
                     }
                 } catch (Exception e) {
@@ -190,6 +204,7 @@ public class BTService extends Service {
 
     public void disconnect() {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) return;
+        clearRaceType();
         mBluetoothGatt.disconnect();
     }
 

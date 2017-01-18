@@ -1,7 +1,10 @@
+#include <SoftwareSerial.h>
+#include <RF24Network.h>
+#include <RF24.h>
 #include <elapsedMillis.h>
 #include <IRremote.h>
 
-#define GATE 2
+#define GATE 1
 #define REPEAT_RATE_IN_MS 75
 
 IRsend irsend;
@@ -9,14 +12,8 @@ IRsend irsend;
 elapsedMillis timer = 0;
 
 #if GATE == 1
-#define MASTER
-#include <SoftwareSerial.h>
-#include <RF24Network.h>
-#include <RF24.h>
-#endif
-
-#ifdef MASTER
 #define Channel 115
+
 SoftwareSerial mySerial(7, 8);
 
 RF24 radio(9, 10);
@@ -31,7 +28,12 @@ struct Payload_host {
 	int argument;
 };
 
+String packetsArray = "";
+#endif
+
 void setup(void) {
+#if GATE == 1
+	//Serial.begin(9600);
 	mySerial.begin(9600);
 	radio.begin();
 	radio.setDataRate(RF24_250KBPS);
@@ -39,11 +41,11 @@ void setup(void) {
 	radio.setCRCLength(RF24_CRC_16);
 	radio.setPALevel(RF24_PA_MAX);
 	network.begin(Channel, 0);
+#endif
 } // end setup()
-#endif // MASTER
 
 void loop(void) {
-#ifdef MASTER
+#if GATE == 1
 	network.update();
 	nRF_receive();
 	if (mySerial.available() > 0) {
@@ -52,7 +54,7 @@ void loop(void) {
 			read = true;
 			inputString = "";
 			index = 0;
-		}
+		} else if (inChar == '#') packetsArray += "1C02C03C04C05C0";
 		else if (read && inChar > 32 && inChar < 123) {
 			inputString += inChar;
 			index++;
@@ -62,15 +64,28 @@ void loop(void) {
 			}
 		}
 	}
-#endif // MASTER
+#endif
 	if (timer > REPEAT_RATE_IN_MS) {
-		irsend.sendSony(GATE, 12);
+    if (packetsArray.length() > 2) {
+      String temp = "";
+      for (int i = 3; i < packetsArray.length(); i++) {
+        temp += packetsArray[i];
+      }
+      sendMessage(packetsArray[0],packetsArray[1],packetsArray[2]);
+      packetsArray = temp;
+    }
+	  irsend.sendSony(GATE, 12);
 		timer = 0;
 	}
 } // end loop()
 
-#ifdef MASTER
+#if GATE == 1
 void sendMessage(char id, char com, char arg) {
+	String debugMessage = "NRF Sending: ";
+	debugMessage += id;
+	debugMessage += com;
+	debugMessage += arg;
+	//Serial.println(debugMessage);
 	bool validPacket = true;
 	if (id < 49 || id > 57) validPacket = false;
 	if (com < 65 || com > 90) validPacket = false;
@@ -80,7 +95,13 @@ void sendMessage(char id, char com, char arg) {
 		p.command = com;
 		p.argument = arg - 48;
 		RF24NetworkHeader header(id - 48);
-		network.write(header, &p, sizeof(p));
+    int retry = 0;
+		while(true) {
+		  if (network.write(header, &p, sizeof(p))) break;
+		  else retry++;
+      if (retry == 5) break;
+      delay(1);
+		}
 	}
 }
 
@@ -93,7 +114,10 @@ void nRF_receive(void) {
 		message += header.from_node;
 		message += payload.command;
 		message += payload.argument;
+		String debugMessage = "NRF Receive: ";
+		debugMessage += message;
+		//Serial.println(debugMessage);
 		mySerial.println(message);
 	}
 } // end nRF_receive()
-#endif // MASTER
+#endif

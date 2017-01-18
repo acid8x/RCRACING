@@ -18,18 +18,19 @@
             android:src="@drawable/logo" />
 
         <TextView
+            android:id="@+id/tvRaceType"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_gravity="center"
-            android:layout_weight="0.05"
-            android:text="@string/test"
+            android:layout_weight="0.1"
+            android:text="@string/tvRaceType"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.65"
+            android:layout_weight="0.7"
             android:orientation="horizontal"
             android:baselineAligned="false">
 

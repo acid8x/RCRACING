@@ -12,7 +12,6 @@ public class Players implements Comparable<Players> {
     private int totalLaps;
     private int nextGate;
     private boolean finish;
-    private long lastReceived;
 
     public Players(int id) {
         this.id = id;
@@ -23,7 +22,6 @@ public class Players implements Comparable<Players> {
         this.totalLaps = -1;
         this.nextGate = 1;
         this.finish = false;
-        this.lastReceived = System.currentTimeMillis();
     }
 
     @Override
@@ -38,38 +36,13 @@ public class Players implements Comparable<Players> {
         return 0;
     }
 
-
-    public boolean checkId(int i)
-    {
-        if (this.id == i) {
-            this.lastReceived = System.currentTimeMillis();
-            return true;
-        }
-        return false;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+    public boolean checkId(int i) {
+        if (this.id == i) return true;
+        else return false;
     }
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getTotalGates() {
-        return totalGates;
-    }
-
-    public void setTotalGates(int totalGates) {
-        this.totalGates = totalGates;
     }
 
     public void addTotalGates(int gate) {
@@ -88,10 +61,6 @@ public class Players implements Comparable<Players> {
         return totalKills;
     }
 
-    public void setTotalKills(int totalKills) {
-        this.totalKills = totalKills;
-    }
-
     public void addTotalKills() {
         this.totalKills++;
         if (this.totalKills == MainActivity.raceKillsNumber) this.finish = true;
@@ -99,10 +68,6 @@ public class Players implements Comparable<Players> {
 
     public int getTotalDeaths() {
         return totalDeaths;
-    }
-
-    public void setTotalDeaths(int totalDeaths) {
-        this.totalDeaths = totalDeaths;
     }
 
     public void addTotalDeaths() {
@@ -113,31 +78,11 @@ public class Players implements Comparable<Players> {
         return totalLaps;
     }
 
-    public void setTotalLaps(int totalLaps) {
-        this.totalLaps = totalLaps;
-    }
-
     public int getNextGate() {
         return nextGate;
     }
 
-    public void setNextGate(int nextGate) {
-        this.nextGate = nextGate;
-    }
-
     public boolean isFinish() {
         return finish;
-    }
-
-    public void setFinish(boolean finish) {
-        this.finish = finish;
-    }
-
-    public long getLastReceived() {
-        return lastReceived;
-    }
-
-    public void setLastReceived(long lastReceived) {
-        this.lastReceived = lastReceived;
     }
 }

@@ -11,13 +11,12 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
-import android.view.Surface;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,14 +27,21 @@ public class MainActivity extends Activity {
 
     private static final int ACTION_REQUEST_PERMISSION = 0;
     private static final int ACTION_REQUEST_ENABLE = 1;
+    private static final int ACTION_REQUEST_RACETYPE = 2;
+    private static final int ACTION_REQUEST_LAPS = 3;
+    private static final int ACTION_REQUEST_GATES = 4;
+    private static final int ACTION_REQUEST_KILLS = 5;
+    private static final int ACTION_REQUEST_LIVES = 6;
 
-    public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false;
+    public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, setup = false;
     public static int permissionsGranted = 0;
-    public static int raceType = 1, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10;
+    public static int raceType = 1, raceLapsNumber = 1, raceGatesNumber = 1, raceKillsNumber = 1, raceLivesNumber = 0;
     public static List<Players> mPlayersList = new ArrayList<>();
     public static List<Integer> mWinnersList = new ArrayList<>();
+    public static int activityInfo;
 
-    public ListView listView;
+    private ListView listView, listView2 = null;
+    private List<Players> list1, list2;
 
     private BTService mBTService = null;
 
@@ -59,6 +65,71 @@ public class MainActivity extends Activity {
             case ACTION_REQUEST_ENABLE:
                 if (resultCode == Activity.RESULT_CANCELED) exit("Bluetooth must be enable");
                 break;
+            case ACTION_REQUEST_RACETYPE:
+                if (resultCode == Activity.RESULT_OK) {
+                    Intent intent;
+                    if (MainActivity.raceType < 3) {
+                        intent = new Intent(getApplicationContext(), LapsActivity.class);
+                        startActivityForResult(intent, ACTION_REQUEST_LAPS);
+                    } else {
+                        intent = new Intent(getApplicationContext(), KillsActivity.class);
+                        startActivityForResult(intent, ACTION_REQUEST_KILLS);
+                    }
+                }  else {
+                    setup = false;
+                    setResult(Activity.RESULT_CANCELED);
+                    finish();
+                }
+                break;
+            case ACTION_REQUEST_LAPS:
+                if (resultCode == Activity.RESULT_OK) {
+                    Intent intent = new Intent(getApplicationContext(), GatesActivity.class);
+                    startActivityForResult(intent, ACTION_REQUEST_GATES);
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), RaceTypeActivity.class);
+                    startActivityForResult(intent, ACTION_REQUEST_RACETYPE);
+                }
+                break;
+            case ACTION_REQUEST_GATES:
+                if (resultCode == Activity.RESULT_OK) {
+                    Intent intent = new Intent(getApplicationContext(), LivesActivity.class);
+                    startActivityForResult(intent, ACTION_REQUEST_LIVES);
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), LapsActivity.class);
+                    startActivityForResult(intent, ACTION_REQUEST_LAPS);
+                }
+                break;
+            case ACTION_REQUEST_KILLS:
+                if (resultCode == Activity.RESULT_OK) {
+                    Intent intent = new Intent(getApplicationContext(), LivesActivity.class);
+                    startActivityForResult(intent, ACTION_REQUEST_LIVES);
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), RaceTypeActivity.class);
+                    startActivityForResult(intent, ACTION_REQUEST_RACETYPE);
+                }
+                break;
+            case ACTION_REQUEST_LIVES:
+                if (resultCode == Activity.RESULT_OK) {
+                    TextView rt = (TextView) findViewById(R.id.tvRaceType);
+                    if (raceType < 3) {
+                        boolean gun = false;
+                        if (raceType == 2) gun = true;
+                        rt.setText("(RACE) GUNS: " + gun + ", LAPS: " + raceLapsNumber + ", GATES: " + raceGatesNumber + ", LIVES: " + raceLivesNumber);
+                    } else if (raceType == 3) {
+                        rt.setText("(BATTLE) KILLS: " + raceKillsNumber + ", LIVES: " + raceLivesNumber);
+                    }
+                    startService(new Intent(getBaseContext(), BTService.class));
+                } else {
+                    Intent intent;
+                    if (MainActivity.raceType < 3) {
+                        intent = new Intent(getApplicationContext(), GatesActivity.class);
+                        startActivityForResult(intent, ACTION_REQUEST_GATES);
+                    } else {
+                        intent = new Intent(getApplicationContext(), KillsActivity.class);
+                        startActivityForResult(intent, ACTION_REQUEST_KILLS);
+                    }
+                }
+                break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -73,7 +144,7 @@ public class MainActivity extends Activity {
             requestPermissions(permissions, ACTION_REQUEST_PERMISSION);
         }
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) exit("Device does not support Bluetooth LE");
-        startService(new Intent(getBaseContext(), BTService.class));
+        started = true;
     }
 
     @Override
@@ -97,14 +168,29 @@ public class MainActivity extends Activity {
             mBTService.disconnect();
             mBTService.close();
         }
-        this.stopService(new Intent(this, BTService.class));
-        this.unbindService(mServiceConnection);
-        finish();
+        if (started) {
+            this.stopService(new Intent(this, BTService.class));
+            this.unbindService(mServiceConnection);
+        }
+        if (Build.VERSION.SDK_INT >= 21) finishAndRemoveTask();
+        else finish();
     }
 
     public void updateUI() {
         Collections.sort(mPlayersList);
-        listView.setAdapter( new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, mPlayersList ) );
+        if (landscape && mPlayersList.size() > 3) {
+            if (listView2 == null) {
+                listView2 = (ListView) findViewById(R.id.listView2);
+                list1 = new ArrayList<>();
+                list2 = new ArrayList<>();
+            }
+            list1 = mPlayersList.subList(0, 3);
+            list2 = mPlayersList.subList(3, list1.size());
+            listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list1));
+            listView2.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list2));
+        } else {
+            listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, mPlayersList));
+        }
     }
 
     // ANDROID MAIN EVENTS
@@ -112,34 +198,60 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         int orientation = getResources().getConfiguration().orientation; // 1 PORTRAIT, 2 LANDSCAPE
         int rotation = getWindowManager().getDefaultDisplay().getRotation(); // 0 0, 1 90, 2 180, 3 270
-        if (orientation == 2 && rotation < 2) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        else if (orientation == 1 && rotation < 2) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        else if (orientation == 2 && rotation > 1) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-        else if (orientation == 1 && rotation > 1) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+        if (orientation == 2) {
+            landscape = true;
+            if (rotation < 2) activityInfo = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            if (rotation > 1) activityInfo = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+        } else if (orientation == 1) {
+            landscape = false;
+            if (rotation < 2) activityInfo = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            if (rotation > 1) activityInfo = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+        }
+        setRequestedOrientation(activityInfo);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         checkSelfPermissions();
         listView = (ListView) findViewById( R.id.listView);
         Collections.sort(mPlayersList);
-        listView.setAdapter( new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, mPlayersList ) );
+        if (landscape && mPlayersList.size() > 3) {
+            if (listView2 == null) {
+                listView2 = (ListView) findViewById(R.id.listView2);
+                list1 = new ArrayList<>();
+                list2 = new ArrayList<>();
+            }
+            list1 = mPlayersList.subList(0, 3);
+            list2 = mPlayersList.subList(3, list1.size());
+            listView.setAdapter( new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list1 ) );
+            listView2.setAdapter( new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list2 ) );
+        } else {
+            listView.setAdapter( new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, mPlayersList ) );
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         hasFocus = true;
+        Intent intent;
         if (BTService.mBluetoothAdapter == null || !BTService.mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, ACTION_REQUEST_ENABLE);
+            intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(intent, ACTION_REQUEST_ENABLE);
         }
-        if (mBTService == null) {
-            if (Build.VERSION.SDK_INT >= 23 && permissionsGranted < 2) return;
-            Intent intent = new Intent(getApplicationContext(), BTService.class);
-            bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
+        if (started) {
+            if (mBTService == null) {
+                if (Build.VERSION.SDK_INT >= 23 && permissionsGranted < 2) return;
+                intent = new Intent(getApplicationContext(), BTService.class);
+                bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
+            }
+            registerReceiver(broadcastUpdate, new IntentFilter("ACTION_UPDATE_UI"));
+            broadcastUpdateRegistered = true;
+            if (running) updateUI();
+            if (!setup) {
+                setup = true;
+                intent = new Intent(getApplicationContext(), RaceTypeActivity.class);
+                startActivityForResult(intent, ACTION_REQUEST_RACETYPE);
+            }
         }
-        registerReceiver(broadcastUpdate, new IntentFilter("ACTION_UPDATE_UI"));
-        broadcastUpdateRegistered = true;
-        if (running) updateUI();
     }
 
     @Override

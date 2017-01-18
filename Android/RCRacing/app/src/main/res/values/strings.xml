@@ -3,5 +3,19 @@
     <string name="imageView1">imageView1</string>
     <string name="imageView2">imageView2</string>
     <string name="imageView3">imageView3</string>
-    <string name="test">TEST</string>
+    <string name="tvRaceType"> </string>
+    <string name="paramsRaceType">Select race type</string>
+    <string name="paramsLaps">How many laps ?</string>
+    <string name="paramsGates">How many gates ?</string>
+    <string name="paramsKills">How many kills ?</string>
+    <string name="paramsLives">How many lives ?</string>
+    <string name="r1">Race without guns</string>
+    <string name="r2">Race with guns activated</string>
+    <string name="r3">Search &amp; Destroy</string>
+    <string name="sb0">1</string>
+    <string name="sb1">2</string>
+    <string name="sb10">10</string>
+    <string name="sb20">20</string>
+    <string name="sb30">30</string>
+    <string name="start">Start</string>
 </resources>

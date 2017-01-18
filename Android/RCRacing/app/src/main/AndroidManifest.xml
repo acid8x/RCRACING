@@ -19,13 +19,31 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".RaceTypeActivity"
+            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar">
+        </activity>
+        <activity
+            android:name=".LapsActivity"
+            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar">
+        </activity>
+        <activity
+            android:name=".GatesActivity"
+            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar">
+        </activity>
+        <activity
+            android:name=".KillsActivity"
+            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar">
+        </activity>
+        <activity
+            android:name=".LivesActivity"
+            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar">
+        </activity>
         <service android:name=".BTService"/>
         <receiver android:name=".broadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="ACTION_DATA_AVAILABLE"/>
-                <action android:name="ACTION_GATT_CONNECTED"/>
-                <action android:name="ACTION_GATT_DISCONNECTED"/>
             </intent-filter>
         </receiver>
     </application>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/selGates"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:alpha="0">
+
+    <TextView
+        android:id="@+id/tvGatesTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:background="#3333"
+        android:gravity="center"
+        android:text="@string/paramsGates"
+        android:textAppearance="@android:style/TextAppearance.Holo.Large"/>
+
+    <TextView
+        android:id="@+id/tvGates"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvGatesTitle"
+        android:layout_centerInParent="true"
+        android:layout_margin="10dp"/>
+
+    <SeekBar
+        android:id="@+id/seekBarGates"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/tvGatesTitle"
+        android:layout_alignStart="@+id/tvGatesTitle"
+        android:layout_below="@+id/tvGates"
+        android:layout_margin="10dp"
+        android:max="10"/>
+
+    <Button
+        android:id="@+id/buttonReturnGates"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/tvGatesTitle"
+        android:layout_below="@+id/seekBarGates"
+        android:layout_margin="10dp"
+        android:background="@drawable/buttonarrow"/>
+
+    <Button
+        android:id="@+id/buttonNextGates"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/tvGatesTitle"
+        android:layout_below="@+id/seekBarGates"
+        android:layout_margin="10dp"
+        android:scaleX="-1"
+        android:scaleY="-1"
+        android:background="@drawable/buttonarrow"/>
+
+</RelativeLayout>
