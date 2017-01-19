@@ -39,7 +39,6 @@ public class RaceTypeActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selRaceType);
                 ViewAnimator
                         .animate(relativeLayout)
-                        .translationY(0, -200)
                         .alpha(1,0)
                         .duration(500)
                         .start();
@@ -60,7 +59,6 @@ public class RaceTypeActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selRaceType);
                 ViewAnimator
                         .animate(relativeLayout)
-                        .translationY(0, -200)
                         .alpha(1,0)
                         .duration(500)
                         .start();
@@ -77,7 +75,6 @@ public class RaceTypeActivity extends Activity {
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selRaceType);
         ViewAnimator
                 .animate(relativeLayout)
-                .translationY(-200, 0)
                 .alpha(0,1)
                 .duration(500)
                 .start();

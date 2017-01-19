@@ -132,7 +132,7 @@ public class BTService extends Service {
 
     // BLUETOOTH CONNECTION
     public boolean initialize() {
-        if (settings == null) if (Build.VERSION.SDK_INT >= 21) settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build();
+        if (settings == null) if (Build.VERSION.SDK_INT >= 21) settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null) return false;
@@ -151,22 +151,20 @@ public class BTService extends Service {
     }
 
     public void scanLeDevice() {
-        if (Build.VERSION.SDK_INT >= 21) {
-            if (mBluetoothLeScanner == null) mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-            if (mBluetoothAdapter.isDiscovering()) mBluetoothAdapter.cancelDiscovery();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (!mConnected) {
-                        if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner.stopScan(mScanCallback);
-                        else mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                        scanLeDevice();
-                    }
+        if (mBluetoothLeScanner == null) if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+        if (mBluetoothAdapter.isDiscovering()) mBluetoothAdapter.cancelDiscovery();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!mConnected) {
+                    if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner.stopScan(mScanCallback);
+                    else mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    scanLeDevice();
                 }
-            }, 10000);
-            if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner.startScan(filters, settings, mScanCallback);
-            else mBluetoothAdapter.startLeScan(mLeScanCallback);
-        }
+            }
+        }, 2000);
+        if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner.startScan(filters, settings, mScanCallback);
+        else mBluetoothAdapter.startLeScan(mLeScanCallback);
     }
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
