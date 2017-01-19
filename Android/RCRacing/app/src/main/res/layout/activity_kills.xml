@@ -39,7 +39,7 @@
             android:layout_alignStart="@+id/tvKillsTitle"
             android:layout_below="@+id/tvKills"
             android:layout_margin="10dp"
-            android:max="10"/>
+            android:max="49"/>
 
         <Button
             android:id="@+id/buttonReturnKills"

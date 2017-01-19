@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/selRaceType"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#4222"
-    android:alpha="0">
+                android:id="@+id/selRaceType"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#4222"
+                android:alpha="0">
 
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -28,14 +28,15 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvRaceTypeTitle"
             android:layout_centerHorizontal="true"
-            android:orientation="vertical">
+            android:layout_centerVertical="false"
+            android:orientation="vertical"
+            android:paddingTop="10dp">
 
             <RadioButton
                 android:id="@+id/radioButton"
                 style="@android:style/Widget.Holo.Light.CompoundButton.RadioButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:text="@string/r1"/>
 
             <RadioButton
@@ -43,7 +44,6 @@
                 style="@android:style/Widget.Holo.Light.CompoundButton.RadioButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
                 android:text="@string/r2"/>
 
             <RadioButton
@@ -51,8 +51,6 @@
                 style="@android:style/Widget.Holo.Light.CompoundButton.RadioButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="-6dp"
                 android:text="@string/r3"/>
 
         </RadioGroup>
@@ -61,7 +59,7 @@
             android:id="@+id/buttonReturnRaceType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/tvRaceTypeTitle"
+            android:layout_alignParentStart="true"
             android:layout_below="@+id/radioGroup"
             android:layout_margin="10dp"
             android:background="@drawable/buttonarrow2"/>
@@ -70,11 +68,11 @@
             android:id="@+id/buttonNextRaceType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/tvRaceTypeTitle"
             android:layout_below="@+id/radioGroup"
             android:layout_margin="10dp"
-            android:scaleX="-1"
-            android:background="@drawable/buttonarrow2"/>
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/buttonarrow2"
+            android:scaleX="-1"/>
 
     </RelativeLayout>
 </RelativeLayout>

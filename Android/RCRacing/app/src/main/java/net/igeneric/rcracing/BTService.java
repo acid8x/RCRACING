@@ -32,7 +32,7 @@ public class BTService extends Service {
     private static BluetoothGatt mBluetoothGatt;
     private static ScanSettings settings;
     private static List<ScanFilter> filters = new ArrayList<>();
-    private static boolean mConnected = false;
+    public static boolean mConnected = false;
     private static List<String> messagesToSend = null;
 
     public final static String ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED";
@@ -47,11 +47,11 @@ public class BTService extends Service {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 mConnected = true;
-                sendBroadcast(new Intent(ACTION_GATT_CONNECTED));
+                sendBroadcast(new Intent("ACTION_UPDATE_UI"));
                 mBluetoothGatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mConnected = false;
-                sendBroadcast(new Intent(ACTION_GATT_DISCONNECTED));
+                sendBroadcast(new Intent("ACTION_UPDATE_UI"));
             }
         }
 
@@ -162,7 +162,7 @@ public class BTService extends Service {
                     scanLeDevice();
                 }
             }
-        }, 2000);
+        }, 5000);
         if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner.startScan(filters, settings, mScanCallback);
         else mBluetoothAdapter.startLeScan(mLeScanCallback);
     }

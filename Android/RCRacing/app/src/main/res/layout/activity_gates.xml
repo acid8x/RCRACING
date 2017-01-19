@@ -39,7 +39,7 @@
             android:layout_alignStart="@+id/tvGatesTitle"
             android:layout_below="@+id/tvGates"
             android:layout_margin="10dp"
-            android:max="10"/>
+            android:max="8"/>
 
         <Button
             android:id="@+id/buttonReturnGates"

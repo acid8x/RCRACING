@@ -1,6 +1,7 @@
 package net.igeneric.rcracing;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -25,10 +26,12 @@ public class LapsActivity extends Activity {
         tv.setText(text);
 
         SeekBar seekBarLaps = (SeekBar) findViewById(R.id.seekBarLaps);
+        if (Build.VERSION.SDK_INT >= 24) seekBarLaps.setProgress(MainActivity.raceLapsNumber-1, true);
+        else seekBarLaps.setProgress(MainActivity.raceLapsNumber-1);
         seekBarLaps.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                MainActivity.raceLapsNumber = i;
+                MainActivity.raceLapsNumber = i+1;
                 TextView tv = (TextView) findViewById(R.id.tvLaps);
                 String text = "" + MainActivity.raceLapsNumber;
                 tv.setText(text);
@@ -52,7 +55,7 @@ public class LapsActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selLaps);
                 ViewAnimator
                         .animate(relativeLayout)
-                        .translationY(0,-200)
+                        .translationY(0,-300)
                         .alpha(1,0)
                         .duration(500)
                         .start();
@@ -73,7 +76,7 @@ public class LapsActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selLaps);
                 ViewAnimator
                         .animate(relativeLayout)
-                        .translationY(0,-200)
+                        .translationY(0,-300)
                         .alpha(1,0)
                         .duration(500)
                         .start();
@@ -90,7 +93,7 @@ public class LapsActivity extends Activity {
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selLaps);
         ViewAnimator
                 .animate(relativeLayout)
-                .translationY(200,0)
+                .translationY(300,0)
                 .alpha(0,1)
                 .duration(500)
                 .start();

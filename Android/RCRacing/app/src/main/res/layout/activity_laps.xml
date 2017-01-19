@@ -39,7 +39,7 @@
             android:layout_alignStart="@+id/tvLapsTitle"
             android:layout_below="@+id/tvLaps"
             android:layout_margin="10dp"
-            android:max="10"/>
+            android:max="19"/>
 
         <Button
             android:id="@+id/buttonReturnLaps"

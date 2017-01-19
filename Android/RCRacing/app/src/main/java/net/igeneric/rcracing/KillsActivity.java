@@ -1,6 +1,7 @@
 package net.igeneric.rcracing;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -25,10 +26,12 @@ public class KillsActivity extends Activity {
         tv.setText(text);
 
         SeekBar seekBarKills = (SeekBar) findViewById(R.id.seekBarKills);
+        if (Build.VERSION.SDK_INT >= 24) seekBarKills.setProgress(MainActivity.raceKillsNumber-1, true);
+        else seekBarKills.setProgress(MainActivity.raceKillsNumber-1);
         seekBarKills.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                MainActivity.raceKillsNumber = i;
+                MainActivity.raceKillsNumber = i+1;
                 TextView tv = (TextView) findViewById(R.id.tvKills);
                 String text = "" + MainActivity.raceKillsNumber;
                 tv.setText(text);
@@ -52,7 +55,7 @@ public class KillsActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selKills);
                 ViewAnimator
                         .animate(relativeLayout)
-                        .translationY(0,-200)
+                        .translationY(0,-300)
                         .alpha(1,0)
                         .duration(500)
                         .start();
@@ -73,7 +76,7 @@ public class KillsActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selKills);
                 ViewAnimator
                         .animate(relativeLayout)
-                        .translationY(0,-200)
+                        .translationY(0,-300)
                         .alpha(1,0)
                         .duration(500)
                         .start();
@@ -90,7 +93,7 @@ public class KillsActivity extends Activity {
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selKills);
         ViewAnimator
                 .animate(relativeLayout)
-                .translationY(200,0)
+                .translationY(300,0)
                 .alpha(0,1)
                 .duration(500)
                 .start();

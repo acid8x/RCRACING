@@ -39,7 +39,7 @@
             android:layout_alignStart="@+id/tvLivesTitle"
             android:layout_below="@+id/tvLives"
             android:layout_margin="10dp"
-            android:max="10"/>
+            android:max="20"/>
 
         <Button
             android:id="@+id/buttonReturnLives"

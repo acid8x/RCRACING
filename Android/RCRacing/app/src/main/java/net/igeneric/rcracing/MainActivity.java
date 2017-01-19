@@ -11,10 +11,12 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,12 +35,14 @@ public class MainActivity extends Activity {
     private static final int ACTION_REQUEST_KILLS = 5;
     private static final int ACTION_REQUEST_LIVES = 6;
 
-    public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, setup = false;
+    public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, setup = false, connected = false;
     public static int permissionsGranted = 0;
-    public static int raceType = 1, raceLapsNumber = 1, raceGatesNumber = 1, raceKillsNumber = 1, raceLivesNumber = 0;
+    public static int raceType = 0, raceLapsNumber = 1, raceGatesNumber = 1, raceKillsNumber = 1, raceLivesNumber = 0;
     public static List<Players> mPlayersList = new ArrayList<>();
     public static List<Integer> mWinnersList = new ArrayList<>();
     public static int activityInfo;
+
+    private Drawable dConnected, dDisconnected;
 
     private ListView listView, listView2 = null;
     private List<Players> list1, list2;
@@ -109,14 +113,23 @@ public class MainActivity extends Activity {
             case ACTION_REQUEST_LIVES:
                 if (resultCode == Activity.RESULT_OK) {
                     TextView rt = (TextView) findViewById(R.id.tvRaceType);
+                    String text = "";
                     if (raceType < 3) {
-                        boolean gun = false;
-                        if (raceType == 2) gun = true;
-                        rt.setText("(RACE) GUNS: " + gun + ", LAPS: " + raceLapsNumber + ", GATES: " + raceGatesNumber + ", LIVES: " + raceLivesNumber);
+                        if (raceType == 2) {
+                            text += "Race with guns, ";
+                            if (raceLivesNumber > 0) text += raceLivesNumber + " lives each\n";
+                            else text += "no lives limit\n";
+                        }
+                        else text += "Race without guns\n";
+                        text += "Complete " + raceLapsNumber + " laps, with " + raceGatesNumber + " gates per lap";
                     } else if (raceType == 3) {
-                        rt.setText("(BATTLE) KILLS: " + raceKillsNumber + ", LIVES: " + raceLivesNumber);
+                        text += "Search & Destroy\nFirst to make " + raceKillsNumber + " kills";
+                        if (raceLivesNumber > 0) text += ", with " + raceLivesNumber + " lives each";
                     }
+                    rt.setText(text);
+                    for (int i = 0; i < 6; i++) mPlayersList.add(new Players(i));
                     startService(new Intent(getBaseContext(), BTService.class));
+                    updateUI();
                 } else {
                     Intent intent;
                     if (MainActivity.raceType < 3) {
@@ -176,6 +189,12 @@ public class MainActivity extends Activity {
     }
 
     public void updateUI() {
+        if (BTService.mConnected != connected) {
+            connected = BTService.mConnected;
+            ImageView connectionState = (ImageView) findViewById(R.id .connectionState);
+            if (connected) connectionState.setImageDrawable(dConnected);
+            else connectionState.setImageDrawable(dDisconnected);
+        }
         Collections.sort(mPlayersList);
         if (landscape && mPlayersList.size() > 3) {
             if (listView2 == null) {
@@ -184,7 +203,7 @@ public class MainActivity extends Activity {
                 list2 = new ArrayList<>();
             }
             list1 = mPlayersList.subList(0, 3);
-            list2 = mPlayersList.subList(3, list1.size());
+            list2 = mPlayersList.subList(3, mPlayersList.size());
             listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list1));
             listView2.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list2));
         } else {
@@ -210,6 +229,14 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         checkSelfPermissions();
+        if (Build.VERSION.SDK_INT >= 21) {
+            dConnected = getDrawable(R.drawable.connected);
+            dDisconnected = getDrawable(R.drawable.disconnected);
+        }
+        else {
+            dConnected = getResources().getDrawable(R.drawable.connected);
+            dDisconnected = getResources().getDrawable(R.drawable.disconnected);
+        }
         listView = (ListView) findViewById( R.id.listView);
         Collections.sort(mPlayersList);
         if (landscape && mPlayersList.size() > 3) {

@@ -39,7 +39,7 @@ public class RaceTypeActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selRaceType);
                 ViewAnimator
                         .animate(relativeLayout)
-                        .translationY(0,-200)
+                        .translationY(0,-300)
                         .alpha(1,0)
                         .duration(500)
                         .start();
@@ -57,27 +57,29 @@ public class RaceTypeActivity extends Activity {
         buttonNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selRaceType);
-                ViewAnimator
-                        .animate(relativeLayout)
-                        .translationY(0,-200)
-                        .alpha(1,0)
-                        .duration(500)
-                        .start();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        setResult(Activity.RESULT_OK);
-                        finish();
-                    }
-                },500);
+                if (MainActivity.raceType > 0) {
+                    RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selRaceType);
+                    ViewAnimator
+                            .animate(relativeLayout)
+                            .translationY(0, -300)
+                            .alpha(1, 0)
+                            .duration(500)
+                            .start();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            setResult(Activity.RESULT_OK);
+                            finish();
+                        }
+                    }, 500);
+                }
             }
         });
 
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selRaceType);
         ViewAnimator
                 .animate(relativeLayout)
-                .translationY(200,0)
+                .translationY(300,0)
                 .alpha(0,1)
                 .duration(500)
                 .start();
