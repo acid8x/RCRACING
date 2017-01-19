@@ -62,13 +62,14 @@ public class LivesActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selLives);
                 ViewAnimator
                         .animate(relativeLayout)
+                        .translationY(0,-200)
                         .alpha(1,0)
                         .duration(500)
                         .start();
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        setResult(Activity.RESULT_OK);
+                        setResult(Activity.RESULT_CANCELED);
                         finish();
                     }
                 },500);
@@ -82,6 +83,7 @@ public class LivesActivity extends Activity {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selLives);
                 ViewAnimator
                         .animate(relativeLayout)
+                        .translationY(0,-200)
                         .alpha(1,0)
                         .duration(500)
                         .start();
@@ -98,6 +100,7 @@ public class LivesActivity extends Activity {
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.selLives);
         ViewAnimator
                 .animate(relativeLayout)
+                .translationY(200,0)
                 .alpha(0,1)
                 .duration(500)
                 .start();

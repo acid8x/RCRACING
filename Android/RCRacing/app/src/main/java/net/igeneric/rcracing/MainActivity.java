@@ -76,9 +76,7 @@ public class MainActivity extends Activity {
                         startActivityForResult(intent, ACTION_REQUEST_KILLS);
                     }
                 }  else {
-                    setup = false;
-                    setResult(Activity.RESULT_CANCELED);
-                    finish();
+                    exit(null);
                 }
                 break;
             case ACTION_REQUEST_LAPS:
@@ -173,7 +171,8 @@ public class MainActivity extends Activity {
             this.unbindService(mServiceConnection);
         }
         if (Build.VERSION.SDK_INT >= 21) finishAndRemoveTask();
-        else finish();
+        finish();
+        System.exit(0);
     }
 
     public void updateUI() {
