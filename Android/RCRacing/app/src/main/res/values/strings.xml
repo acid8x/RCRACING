@@ -19,4 +19,7 @@
     <string name="sb20">20</string>
     <string name="sb30">30</string>
     <string name="start">Start</string>
+    <string name="spinner_title">Select Race Type</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
 </resources>

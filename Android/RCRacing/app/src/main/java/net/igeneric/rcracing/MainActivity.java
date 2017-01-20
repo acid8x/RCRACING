@@ -29,24 +29,14 @@ public class MainActivity extends Activity {
 
     private static final int ACTION_REQUEST_PERMISSION = 0;
     private static final int ACTION_REQUEST_ENABLE = 1;
-    private static final int ACTION_REQUEST_RACETYPE = 2;
-    private static final int ACTION_REQUEST_LAPS = 3;
-    private static final int ACTION_REQUEST_GATES = 4;
-    private static final int ACTION_REQUEST_KILLS = 5;
-    private static final int ACTION_REQUEST_LIVES = 6;
+    private static final int ACTION_REQUEST_SETUP = 2;
 
     public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, setup = false, connected = false;
-    public static int permissionsGranted = 0;
-    public static int raceType = 0, raceLapsNumber = 1, raceGatesNumber = 1, raceKillsNumber = 1, raceLivesNumber = 0;
+    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0;
     public static List<Players> mPlayersList = new ArrayList<>();
     public static List<Integer> mWinnersList = new ArrayList<>();
-    public static int activityInfo;
-
     private Drawable dConnected, dDisconnected;
-
     private ListView listView, listView2 = null;
-    private List<Players> list1, list2;
-
     private BTService mBTService = null;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -69,48 +59,7 @@ public class MainActivity extends Activity {
             case ACTION_REQUEST_ENABLE:
                 if (resultCode == Activity.RESULT_CANCELED) exit("Bluetooth must be enable");
                 break;
-            case ACTION_REQUEST_RACETYPE:
-                if (resultCode == Activity.RESULT_OK) {
-                    Intent intent;
-                    if (MainActivity.raceType < 3) {
-                        intent = new Intent(getApplicationContext(), LapsActivity.class);
-                        startActivityForResult(intent, ACTION_REQUEST_LAPS);
-                    } else {
-                        intent = new Intent(getApplicationContext(), KillsActivity.class);
-                        startActivityForResult(intent, ACTION_REQUEST_KILLS);
-                    }
-                }  else {
-                    exit(null);
-                }
-                break;
-            case ACTION_REQUEST_LAPS:
-                if (resultCode == Activity.RESULT_OK) {
-                    Intent intent = new Intent(getApplicationContext(), GatesActivity.class);
-                    startActivityForResult(intent, ACTION_REQUEST_GATES);
-                } else {
-                    Intent intent = new Intent(getApplicationContext(), RaceTypeActivity.class);
-                    startActivityForResult(intent, ACTION_REQUEST_RACETYPE);
-                }
-                break;
-            case ACTION_REQUEST_GATES:
-                if (resultCode == Activity.RESULT_OK) {
-                    Intent intent = new Intent(getApplicationContext(), LivesActivity.class);
-                    startActivityForResult(intent, ACTION_REQUEST_LIVES);
-                } else {
-                    Intent intent = new Intent(getApplicationContext(), LapsActivity.class);
-                    startActivityForResult(intent, ACTION_REQUEST_LAPS);
-                }
-                break;
-            case ACTION_REQUEST_KILLS:
-                if (resultCode == Activity.RESULT_OK) {
-                    Intent intent = new Intent(getApplicationContext(), LivesActivity.class);
-                    startActivityForResult(intent, ACTION_REQUEST_LIVES);
-                } else {
-                    Intent intent = new Intent(getApplicationContext(), RaceTypeActivity.class);
-                    startActivityForResult(intent, ACTION_REQUEST_RACETYPE);
-                }
-                break;
-            case ACTION_REQUEST_LIVES:
+            case ACTION_REQUEST_SETUP:
                 if (resultCode == Activity.RESULT_OK) {
                     TextView rt = (TextView) findViewById(R.id.tvRaceType);
                     String text = "";
@@ -127,18 +76,11 @@ public class MainActivity extends Activity {
                         if (raceLivesNumber > 0) text += ", with " + raceLivesNumber + " lives each";
                     }
                     rt.setText(text);
-                    for (int i = 0; i < 6; i++) mPlayersList.add(new Players(i));
                     startService(new Intent(getBaseContext(), BTService.class));
                     updateUI();
                 } else {
-                    Intent intent;
-                    if (MainActivity.raceType < 3) {
-                        intent = new Intent(getApplicationContext(), GatesActivity.class);
-                        startActivityForResult(intent, ACTION_REQUEST_GATES);
-                    } else {
-                        intent = new Intent(getApplicationContext(), KillsActivity.class);
-                        startActivityForResult(intent, ACTION_REQUEST_KILLS);
-                    }
+                    Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
+                    startActivityForResult(intent, ACTION_REQUEST_SETUP);
                 }
                 break;
         }
@@ -197,11 +139,8 @@ public class MainActivity extends Activity {
         }
         Collections.sort(mPlayersList);
         if (landscape && mPlayersList.size() > 3) {
-            if (listView2 == null) {
-                listView2 = (ListView) findViewById(R.id.listView2);
-                list1 = new ArrayList<>();
-                list2 = new ArrayList<>();
-            }
+            List<Players> list1, list2;
+            if (listView2 == null) listView2 = (ListView) findViewById(R.id.listView2);
             list1 = mPlayersList.subList(0, 3);
             list2 = mPlayersList.subList(3, mPlayersList.size());
             listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list1));
@@ -239,19 +178,6 @@ public class MainActivity extends Activity {
         }
         listView = (ListView) findViewById( R.id.listView);
         Collections.sort(mPlayersList);
-        if (landscape && mPlayersList.size() > 3) {
-            if (listView2 == null) {
-                listView2 = (ListView) findViewById(R.id.listView2);
-                list1 = new ArrayList<>();
-                list2 = new ArrayList<>();
-            }
-            list1 = mPlayersList.subList(0, 3);
-            list2 = mPlayersList.subList(3, list1.size());
-            listView.setAdapter( new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list1 ) );
-            listView2.setAdapter( new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list2 ) );
-        } else {
-            listView.setAdapter( new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, mPlayersList ) );
-        }
     }
 
     @Override
@@ -274,8 +200,8 @@ public class MainActivity extends Activity {
             if (running) updateUI();
             if (!setup) {
                 setup = true;
-                intent = new Intent(getApplicationContext(), RaceTypeActivity.class);
-                startActivityForResult(intent, ACTION_REQUEST_RACETYPE);
+                intent = new Intent(getApplicationContext(), SetupActivity.class);
+                startActivityForResult(intent, ACTION_REQUEST_SETUP);
             }
         }
     }
@@ -294,11 +220,6 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         exit(null);
         super.onDestroy();
-    }
-
-    @Override
-    public void onBackPressed(){
-        moveTaskToBack(true);
     }
 
     private BroadcastReceiver broadcastUpdate = new BroadcastReceiver() {

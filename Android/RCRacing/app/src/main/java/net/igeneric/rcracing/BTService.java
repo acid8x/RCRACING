@@ -35,8 +35,6 @@ public class BTService extends Service {
     public static boolean mConnected = false;
     private static List<String> messagesToSend = null;
 
-    public final static String ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED";
     public final static String ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA = "EXTRA_DATA";
     public final static UUID UUID_BLE_HM10_RX_TX = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");

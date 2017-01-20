@@ -20,24 +20,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RaceTypeActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
-        </activity>
-        <activity
-            android:name=".LapsActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
-        </activity>
-        <activity
-            android:name=".GatesActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
-        </activity>
-        <activity
-            android:name=".KillsActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
-        </activity>
-        <activity
-            android:name=".LivesActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
+            android:name=".SetupActivity"
+            android:theme="@style/theme">
         </activity>
         <service android:name=".BTService"/>
         <receiver android:name=".broadcastReceiver"
