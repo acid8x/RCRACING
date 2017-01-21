@@ -31,9 +31,17 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 		if (convertView == null) convertView = inflater.inflate( resource, null );
 		Players p = getItem( position );
 		TextView name = (TextView) convertView.findViewById(R.id.tvInfo1);
-		if (p != null) name.setText(p.getName());
+		if (p != null) {
+			String text = p.getName();
+			if (p.getLastLap() != 0) text += " (LastLap: " + p.getLastLap() + "s)";
+			name.setText(text);
+		}
 		TextView info = (TextView) convertView.findViewById(R.id.tvInfo2);
-		if (p != null) info.setText("NextGate: " + p.getNextGate() + " Laps: " + p.getTotalLaps() + "\nKills: " + p.getTotalKills() + " Deaths: " + p.getTotalDeaths());
+		if (p != null) {
+			String text = "NextGate: " + p.getNextGate() + " Laps: " + p.getTotalLaps() + "\nKills / Deaths: " + p.getTotalKills() + " / " + p.getTotalDeaths();
+			if (p.getLives() != -1) text += " Lives: " + p.getLives();
+			info.setText(text);
+		}
 		ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView1);
         String uri = "drawable/truck";
         int imageResource = context.getResources().getIdentifier(uri, null, context.getPackageName());

@@ -2,7 +2,7 @@ package net.igeneric.rcracing;
 
 import android.support.annotation.NonNull;
 
-public class Players implements Comparable<Players> {
+class Players implements Comparable<Players> {
 
     private int id;
     private String name;
@@ -12,8 +12,11 @@ public class Players implements Comparable<Players> {
     private int totalLaps;
     private int nextGate;
     private boolean finish;
+    private int lives;
+    private long currentLap;
+    private long lastLap;
 
-    public Players(int id) {
+    Players(int id) {
         this.id = id;
         this.name = "TRUCK " + id;
         this.totalGates = 0;
@@ -22,6 +25,9 @@ public class Players implements Comparable<Players> {
         this.totalLaps = -1;
         this.nextGate = 1;
         this.finish = false;
+        this.lives = MainActivity.raceLivesNumber;
+        this.currentLap = 0;
+        this.lastLap = 0;
     }
 
     @Override
@@ -36,18 +42,21 @@ public class Players implements Comparable<Players> {
         return 0;
     }
 
-    public boolean checkId(int i) {
-        if (this.id == i) return true;
-        else return false;
+    boolean checkId(int i) {
+        return this.id == i;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public void addTotalGates(int gate) {
+    void addTotalGates(int gate) {
         if (this.nextGate == 1 && gate == 1) {
             this.totalLaps++;
+            if (this.currentLap != 0) {
+                this.lastLap = System.currentTimeMillis() - this.currentLap;
+                this.currentLap = System.currentTimeMillis();
+            } else this.currentLap = System.currentTimeMillis();
             if (this.totalLaps == MainActivity.raceLapsNumber) this.finish = true;
             else this.nextGate++;
         } else if (this.nextGate == gate) {
@@ -57,32 +66,44 @@ public class Players implements Comparable<Players> {
         }
     }
 
-    public int getTotalKills() {
+    int getTotalKills() {
         return totalKills;
     }
 
-    public void addTotalKills() {
+    void addTotalKills() {
         this.totalKills++;
         if (this.totalKills == MainActivity.raceKillsNumber) this.finish = true;
     }
 
-    public int getTotalDeaths() {
+    int getTotalDeaths() {
         return totalDeaths;
     }
 
-    public void addTotalDeaths() {
+    void addTotalDeaths() {
         this.totalDeaths++;
+        if (this.lives > 0) this.lives--;
+        if (this.lives == 0) {
+            this.finish = true;
+        }
     }
 
-    public int getTotalLaps() {
+    int getTotalLaps() {
         return totalLaps;
     }
 
-    public int getNextGate() {
+    int getNextGate() {
         return nextGate;
     }
 
-    public boolean isFinish() {
+    boolean isFinish() {
         return finish;
+    }
+
+    int getLives() {
+        return lives;
+    }
+
+    long getLastLap() {
+        return lastLap/1000;
     }
 }

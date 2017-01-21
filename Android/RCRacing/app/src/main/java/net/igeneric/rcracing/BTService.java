@@ -1,6 +1,5 @@
 package net.igeneric.rcracing;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -31,6 +30,7 @@ public class BTService extends Service {
     private static BluetoothLeScanner mBluetoothLeScanner;
     private static BluetoothGatt mBluetoothGatt;
     private static ScanSettings settings;
+    private static ScanCallback mScanCallback = null;
     private static List<ScanFilter> filters = new ArrayList<>();
     public static boolean mConnected = false;
     private static List<String> messagesToSend = null;
@@ -151,6 +151,22 @@ public class BTService extends Service {
     public void scanLeDevice() {
         if (mBluetoothLeScanner == null) if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
         if (mBluetoothAdapter.isDiscovering()) mBluetoothAdapter.cancelDiscovery();
+        if (mScanCallback == null && Build.VERSION.SDK_INT >= 21) mScanCallback = new ScanCallback() {
+            @Override
+            public void onScanResult(int callbackType, final ScanResult result) {
+                if (Build.VERSION.SDK_INT >= 21) {
+                    if (result.getDevice() != null) {
+                        try {
+                            if (result.getDevice().getName().equals("RCRACING")) {
+                                connectTo(result.getDevice().getAddress());
+                            }
+                        } catch (Exception e) {
+                            //
+                        }
+                    }
+                }
+            }
+        };
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -179,23 +195,6 @@ public class BTService extends Service {
                 }
             }
         }
-    };
-
-    @SuppressLint("newApi")
-    private ScanCallback mScanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, final ScanResult result) {
-            if (result.getDevice() != null) {
-                try {
-                    if (result.getDevice().getName().equals("RCRACING")) {
-                        connectTo(result.getDevice().getAddress());
-                    }
-                } catch (Exception e) {
-                    //
-                }
-            }
-        }
-
     };
 
     public void disconnect() {

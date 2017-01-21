@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="button" parent="android:Widget.Button">
-        <item name="android:background">@mipmap/button</item>
+        <item name="android:background">@drawable/button</item>
     </style>
 </resources>

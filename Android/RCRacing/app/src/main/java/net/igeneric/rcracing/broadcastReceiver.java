@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
+import java.util.Collections;
+
 public class broadcastReceiver extends BroadcastReceiver {
 
     @Override
@@ -25,7 +27,10 @@ public class broadcastReceiver extends BroadcastReceiver {
                             final int id = charArray[0] - 48;
                             final char command = charArray[1];
                             final int arg = charArray[2] - 48;
-                            if (id < 10 && command > 64 && arg < 10) dataHandle(id, command, arg);
+                            if (id < 10 && command > 64 && arg < 10) {
+                                dataHandle(id, command, arg);
+                                if (MainActivity.hasFocus) context.sendBroadcast(new Intent("ACTION_UPDATE_UI"));
+                            }
                             data = "";
                             index = 0;
                             read = false;
@@ -33,7 +38,6 @@ public class broadcastReceiver extends BroadcastReceiver {
                     }
                 }
             }
-            if (MainActivity.hasFocus) context.sendBroadcast(new Intent("ACTION_UPDATE_UI"));
         }
     }
 
@@ -60,6 +64,7 @@ public class broadcastReceiver extends BroadcastReceiver {
                 BTService.sendMessage("&" + id + "C" + MainActivity.raceType);
                 break;
         }
+        Collections.sort(MainActivity.mPlayersList);
         if (p.isFinish()) MainActivity.mWinnersList.add(id);
     }
 

@@ -15,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -24,20 +25,23 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
 
     private static final int ACTION_REQUEST_PERMISSION = 0;
     private static final int ACTION_REQUEST_ENABLE = 1;
     private static final int ACTION_REQUEST_SETUP = 2;
+    private static final int MY_DATA_CHECK_CODE = 3;
 
-    public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, setup = false, connected = false;
-    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0;
+    public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, setup = false, connected = false, isTextToSpeech = false;
+    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0, ttsID = 0;
     public static List<Players> mPlayersList = new ArrayList<>();
     public static List<Integer> mWinnersList = new ArrayList<>();
     private Drawable dConnected, dDisconnected;
     private ListView listView, listView2 = null;
     private BTService mBTService = null;
+    private TextToSpeech tts = null;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -66,21 +70,31 @@ public class MainActivity extends Activity {
                     if (raceType < 3) {
                         if (raceType == 2) {
                             text += "Race with guns, ";
-                            if (raceLivesNumber > 0) text += raceLivesNumber + " lives each\n";
+                            if (raceLivesNumber > -1) text += raceLivesNumber + " lives each\n";
                             else text += "no lives limit\n";
                         }
                         else text += "Race without guns\n";
                         text += "Complete " + raceLapsNumber + " laps, with " + raceGatesNumber + " gates per lap";
                     } else if (raceType == 3) {
                         text += "Search & Destroy\nFirst to make " + raceKillsNumber + " kills";
-                        if (raceLivesNumber > 0) text += ", with " + raceLivesNumber + " lives each";
+                        if (raceLivesNumber > -1) text += ", with " + raceLivesNumber + " lives each";
                     }
                     rt.setText(text);
                     startService(new Intent(getBaseContext(), BTService.class));
+                    for (int i = 0; i < 6; i++) mPlayersList.add(new Players(i+1));
                     updateUI();
                 } else {
                     Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
                     startActivityForResult(intent, ACTION_REQUEST_SETUP);
+                }
+                break;
+            case MY_DATA_CHECK_CODE:
+                if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+                    tts = new TextToSpeech(this, this);
+                } else {
+                    Intent installTTSIntent = new Intent();
+                    installTTSIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                    startActivity(installTTSIntent);
                 }
                 break;
         }
@@ -137,7 +151,6 @@ public class MainActivity extends Activity {
             if (connected) connectionState.setImageDrawable(dConnected);
             else connectionState.setImageDrawable(dDisconnected);
         }
-        Collections.sort(mPlayersList);
         if (landscape && mPlayersList.size() > 3) {
             List<Players> list1, list2;
             if (listView2 == null) listView2 = (ListView) findViewById(R.id.listView2);
@@ -147,6 +160,16 @@ public class MainActivity extends Activity {
             listView2.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list2));
         } else {
             listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, mPlayersList));
+        }
+    }
+
+    public void onInit(int initStatus) {
+        if (initStatus == TextToSpeech.SUCCESS) {
+            isTextToSpeech = true;
+            tts.setLanguage(Locale.US);
+            say("Welcome to RC Racing");
+        } else if (initStatus == TextToSpeech.ERROR) {
+            Toast.makeText(this, "Sorry! Text To Speech failed...", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -178,6 +201,18 @@ public class MainActivity extends Activity {
         }
         listView = (ListView) findViewById( R.id.listView);
         Collections.sort(mPlayersList);
+        Intent checkTTSIntent = new Intent();
+        checkTTSIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkTTSIntent, MY_DATA_CHECK_CODE);
+    }
+
+    private void say(String s) {
+        if (isTextToSpeech) {
+            String UTTERANCE_ID = "";
+            UTTERANCE_ID += ttsID++;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
+            else tts.speak(s, TextToSpeech.QUEUE_ADD, null);
+        }
     }
 
     @Override
