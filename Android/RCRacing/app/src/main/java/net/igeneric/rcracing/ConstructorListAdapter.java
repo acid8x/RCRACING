@@ -38,7 +38,7 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 		}
 		TextView info = (TextView) convertView.findViewById(R.id.tvInfo2);
 		if (p != null) {
-			String text = "NextGate: " + p.getNextGate() + " Laps: " + p.getTotalLaps() + "\nKills / Deaths: " + p.getTotalKills() + " / " + p.getTotalDeaths();
+			String text = "NextGate: " + p.getNextGate() + " Laps: " + p.getTotalLaps() + "\nKills: " + p.getTotalKills() + " Deaths: " + p.getTotalDeaths();
 			if (p.getLives() != -1) text += " Lives: " + p.getLives();
 			info.setText(text);
 		}

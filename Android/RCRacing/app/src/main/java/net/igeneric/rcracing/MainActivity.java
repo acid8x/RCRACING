@@ -42,6 +42,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private ListView listView, listView2 = null;
     private BTService mBTService = null;
     private TextToSpeech tts = null;
+    private long lastSpeech = 0;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -81,7 +82,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     }
                     rt.setText(text);
                     startService(new Intent(getBaseContext(), BTService.class));
-                    for (int i = 0; i < 6; i++) mPlayersList.add(new Players(i+1));
                     updateUI();
                 } else {
                     Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
@@ -91,6 +91,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             case MY_DATA_CHECK_CODE:
                 if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                     tts = new TextToSpeech(this, this);
+                    tts.setPitch(1.2f);
+                    tts.setSpeechRate(1.6f);
                 } else {
                     Intent installTTSIntent = new Intent();
                     installTTSIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
@@ -167,7 +169,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         if (initStatus == TextToSpeech.SUCCESS) {
             isTextToSpeech = true;
             tts.setLanguage(Locale.US);
-            say("Welcome to RC Racing");
+            say("Welcome to R C Racing");
         } else if (initStatus == TextToSpeech.ERROR) {
             Toast.makeText(this, "Sorry! Text To Speech failed...", Toast.LENGTH_LONG).show();
         }
@@ -207,11 +209,12 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     private void say(String s) {
-        if (isTextToSpeech) {
+        if (isTextToSpeech && System.currentTimeMillis() - lastSpeech > 1000) {
+            lastSpeech = System.currentTimeMillis();
             String UTTERANCE_ID = "";
             UTTERANCE_ID += ttsID++;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID);
-            else tts.speak(s, TextToSpeech.QUEUE_ADD, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID);
+            else tts.speak(s, TextToSpeech.QUEUE_FLUSH, null);
         }
     }
 

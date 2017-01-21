@@ -46,6 +46,10 @@ class Players implements Comparable<Players> {
         return this.id == i;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     String getName() {
         return name;
     }
