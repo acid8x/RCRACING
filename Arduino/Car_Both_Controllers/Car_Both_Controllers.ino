@@ -13,7 +13,7 @@ struct hPayload { char command; int argument; };
 struct cPayload { int X; int Y; bool LB; bool RB; };
 
 /******************/
-#define THIS_NODE 01
+#define THIS_NODE 03
 /******************/
 
 #define Channel 115
@@ -68,7 +68,7 @@ void setup() {
 	radio.setCRCLength(RF24_CRC_16);
 	radio.setPALevel(RF24_PA_MAX);
 	node_controller = THIS_NODE + 010;
-	node_new_controller = node_controller + 010;
+	node_new_controller = THIS_NODE + 020;
 	network.begin(Channel, THIS_NODE);
 	irrecvs[0] = new IRrecv(Receiver1);
 	irrecvs[0]->enableIRIn();
@@ -115,8 +115,8 @@ void nRF_receive(void) {
 			}
 		}
 		else {
-			if (header.from_node == node_controller + 010) new_controller_connected = true;
-			cPayload a;
+      if (header.from_node == node_new_controller && !new_controller_connected) new_controller_connected = true;
+			cPayload a; //int X; int Y; bool LB; bool RB; };
 			network.read(header, &a, sizeof(a));
 			controllerUpdate = 0;
 			if (!controllerConnected) {
@@ -374,8 +374,8 @@ void sendHost(char command, int value) {
 }
 
 void sendNewController(char command) {
-	RF24NetworkHeader header(node_new_controller,command);
-	unsigned int message = 0;
+	RF24NetworkHeader header(node_new_controller);
+	unsigned int message = command;
 	int retry = 0;
 	while (true) {
 		if (network.write(header, &message, sizeof(unsigned int))) break;

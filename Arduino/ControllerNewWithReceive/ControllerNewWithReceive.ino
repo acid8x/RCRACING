@@ -1,12 +1,12 @@
-#include <PinGroup.h>
 #include <elapsedMillis.h>
 #include <RF24Network.h>
 #include <RF24.h>
 #include <Pin.h>
 
-Pin R = Pin(14);
-Pin G = Pin(15);
-Pin B = Pin(16);
+Pin T = Pin(A4);
+Pin D = Pin(A5);
+Pin S = Pin(A2);
+Pin Z = Pin(A3);
 
 int B = 3, A = 4, Y = 5, X = 6, RB = 7, LB = 8, CSN = 9, CE = 10, Steering = A0, Brake = A1, Gaz = A7, ledX = A2, ledA = A4, ledB = A5, ledY = A3;
 
@@ -21,16 +21,24 @@ struct Payload {
 	int throttle;
 };
 
+struct cPayload {
+  int steering;
+  int throttle;
+  bool lb;
+  bool rb;
+};
+
 RF24 radio(CE, CSN);
 RF24Network network(radio);
 
-const int this_node = 013;
+const int this_node = 023;
 const int car_node = 03;
 const int rf_channel = 115;
 
 String received = "";
+bool flash = false;
 
-elapsedMillis timer, tt, td, ts;
+elapsedMillis timer;
 
 int centerX = 512, minX = 384, maxX = 640, minGaz = 384, maxGaz = 640, minBrake = 384, maxBrake = 640;
 
@@ -44,65 +52,64 @@ void setup() {
 	}
 	centerX /= 6;
 	for (int i = 0; i < 6; i++) pinMode(buttons[i], INPUT_PULLUP);
-	for (int i = 0; i < 4; i++) {
-		pinMode(leds[i], OUTPUT);
-		digitalWrite(leds[i], LOW);
-	}
-	radio.begin();
+  Z.setOutput();
+	Z.setLow();
+  T.setOutput();
+	T.setHigh();
+  S.setOutput();
+	S.setHigh();
+  D.setOutput();
+	D.setHigh();
 	radio.begin();
 	radio.setDataRate(RF24_250KBPS);
-	radio.setRetries(0, 15);
-	radio.setCRCLength(RF24_CRC_16);
-	radio.setPALevel(RF24_PA_MAX);
+	radio.setRetries(0, 0);
 	network.begin(rf_channel, this_node);
 }
 
 void loop() {
 	network.update();
 	nRF_receive();
-	if (received != "") {
-		for each (char c in received)
-		{
-			switch (c)
-			{
-			case 'S':
-				break;
-			case 's':
-				break;
-			case 'T':
-				break;
-			case 't':
-				break;
-			case 'D':
-				break;
-			case 'd':
-				break;
-			}
-		}
-		received = "";
-	}
-	for (int i = 0; i < 6; i++) {
-		if (buttonsValue[i]) {
-			buttonsValue[i] = digitalRead(buttons[i]);
-			if (i < 4 && buttonsValue[i] == 0) digitalWrite(leds[i], HIGH);
-		}
-	}
-	if (timer > 100) {
-		Payload payload;
-		payload.b = buttonsValue[0];
-		payload.a = buttonsValue[1];
-		payload.y = buttonsValue[2];
-		payload.x = buttonsValue[3];
-		payload.rb = buttonsValue[4];
-		payload.lb = buttonsValue[5];
-		payload.steering = readX();
-		payload.throttle = readY();
+  if (received != "") {
+    for (int i = 0; i < received.length(); i++)
+    {
+      switch (received[i])
+      {
+      case 'S':
+        S.setHigh();
+        break;
+      case 's':
+        S.setLow();
+        break;
+      case 'T':
+        T.setHigh();
+        break;
+      case 't':
+        T.setLow();
+        break;
+      case 'D':
+        flash = true;
+        break;
+      case 'd':
+        flash = false;
+        break;
+      }
+    }
+    received = "";
+  }
+	if (buttonsValue[1]) buttonsValue[1] = digitalRead(buttons[1]);
+  if (buttonsValue[3]) buttonsValue[3] = digitalRead(buttons[3]);
+  if (timer > 75) {
+    if (flash) D.toggleState();
+    else if (!D.getState()) D.setHigh();
+    cPayload payload;
+    payload.rb = buttonsValue[3];
+    payload.lb = buttonsValue[1];
+    payload.steering = 180 - readX();
+    payload.throttle = 255 - readY();
 		RF24NetworkHeader header(car_node);
 		network.write(header, &payload, sizeof(payload));
-		for (int i = 0; i < 6; i++) {
-			buttonsValue[i] = 1;
-			if (i < 4) digitalWrite(leds[i], LOW);
-		}
+    buttonsValue[1] = 1;
+    buttonsValue[3] = 1;
 		timer = 0;
 	}
 }
@@ -112,9 +119,10 @@ void nRF_receive(void) {
 		RF24NetworkHeader header;
 		network.peek(header);
 		if (header.from_node == car_node) {
-			received += header.type;
 			unsigned int message;
 			network.read(header, &message, sizeof(unsigned int));
+      char c = message;
+      received += c;
 		}
 	}
 }
