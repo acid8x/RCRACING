@@ -42,7 +42,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private ListView listView, listView2 = null;
     private BTService mBTService = null;
     private TextToSpeech tts = null;
-    private long lastSpeech = 0;
+    public static List<String> ttsArray = new ArrayList<>();
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -91,8 +91,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             case MY_DATA_CHECK_CODE:
                 if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                     tts = new TextToSpeech(this, this);
-                    tts.setPitch(1.2f);
-                    tts.setSpeechRate(1.6f);
                 } else {
                     Intent installTTSIntent = new Intent();
                     installTTSIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
@@ -209,8 +207,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     private void say(String s) {
-        if (isTextToSpeech && System.currentTimeMillis() - lastSpeech > 1000) {
-            lastSpeech = System.currentTimeMillis();
+        if (isTextToSpeech) {
             String UTTERANCE_ID = "";
             UTTERANCE_ID += ttsID++;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID);
@@ -266,6 +263,12 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             final String action = intent.getAction();
             switch (action) {
                 case "ACTION_UPDATE_UI":
+                    if (ttsArray.size() > 0) {
+                        for (String s : ttsArray) {
+                            say(s);
+                        }
+                        ttsArray.clear();
+                    }
                     updateUI();
                     break;
             }

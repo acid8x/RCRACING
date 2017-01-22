@@ -4,20 +4,26 @@ import android.support.annotation.NonNull;
 
 class Players implements Comparable<Players> {
 
+    private int index = 0;
+
     private int id;
+    private int position;
     private String name;
     private int totalGates;
     private int totalKills;
     private int totalDeaths;
     private int totalLaps;
     private int nextGate;
-    private boolean finish;
     private int lives;
+    private int lastLap;
+    private boolean finish;
+    private boolean dead;
     private long currentLap;
-    private long lastLap;
 
     Players(int id) {
         this.id = id;
+        this.position = index;
+        index++;
         this.name = "TRUCK " + id;
         this.totalGates = 0;
         this.totalKills = 0;
@@ -25,6 +31,7 @@ class Players implements Comparable<Players> {
         this.totalLaps = -1;
         this.nextGate = 1;
         this.finish = false;
+        this.dead = false;
         this.lives = MainActivity.raceLivesNumber;
         this.currentLap = 0;
         this.lastLap = 0;
@@ -33,21 +40,22 @@ class Players implements Comparable<Players> {
     @Override
     public int compareTo(@NonNull Players players) {
         if (MainActivity.raceType < 3) {
-            if (players.totalGates < this.totalGates) return -1;
-            if (players.totalGates > this.totalGates) return 1;
+            int i = 0;
+            if (players.totalGates < this.totalGates) i--;
+            if (players.totalGates > this.totalGates) i++;
+            players.position += i;
+            return i;
         } else {
-            if (players.totalKills < this.totalKills) return -1;
-            if (players.totalKills > this.totalKills) return 1;
+            int i = 0;
+            if (players.totalKills < this.totalKills) i--;
+            if (players.totalKills > this.totalKills) i++;
+            players.position += i;
+            return i;
         }
-        return 0;
     }
 
     boolean checkId(int i) {
         return this.id == i;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     String getName() {
@@ -58,11 +66,13 @@ class Players implements Comparable<Players> {
         if (this.nextGate == 1 && gate == 1) {
             this.totalLaps++;
             if (this.currentLap != 0) {
-                this.lastLap = System.currentTimeMillis() - this.currentLap;
+                this.lastLap = (int)((System.currentTimeMillis() - this.currentLap)/1000);
+                MainActivity.ttsArray.add("Truck number " + this.id + " finish lap " + this.totalLaps + " in " + this.lastLap + "seconds");
                 this.currentLap = System.currentTimeMillis();
             } else this.currentLap = System.currentTimeMillis();
             if (this.totalLaps == MainActivity.raceLapsNumber) this.finish = true;
             else this.nextGate++;
+            this.totalGates++;
         } else if (this.nextGate == gate) {
             this.totalGates++;
             this.nextGate++;
@@ -87,7 +97,7 @@ class Players implements Comparable<Players> {
         this.totalDeaths++;
         if (this.lives > 0) this.lives--;
         if (this.lives == 0) {
-            this.finish = true;
+            this.dead = true;
         }
     }
 
@@ -108,6 +118,10 @@ class Players implements Comparable<Players> {
     }
 
     long getLastLap() {
-        return lastLap/1000;
+        return lastLap;
+    }
+
+    public boolean isDead() {
+        return dead;
     }
 }

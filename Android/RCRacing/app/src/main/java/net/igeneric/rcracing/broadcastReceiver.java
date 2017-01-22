@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class broadcastReceiver extends BroadcastReceiver {
 
@@ -46,6 +48,7 @@ public class broadcastReceiver extends BroadcastReceiver {
         if (p == null) {
             p = new Players(id);
             MainActivity.mPlayersList.add(p);
+            MainActivity.ttsArray.add(p.getName() + " join the race");
         } else if (p.isFinish()) return;
         switch (command) {
             case 'D':
@@ -65,7 +68,14 @@ public class broadcastReceiver extends BroadcastReceiver {
                 break;
         }
         Collections.sort(MainActivity.mPlayersList);
-        if (p.isFinish()) MainActivity.mWinnersList.add(id);
+        if (p.isFinish() && !p.isDead()) {
+            MainActivity.mWinnersList.add(id);
+            int pos = MainActivity.mPlayersList.indexOf(p)+1;
+            String text = p.getName() + " finish the ";
+            if (MainActivity.raceType > 2) text += "battle in position number " + pos;
+            else if (MainActivity.raceType > 0) text += "race in position number " + pos;
+            MainActivity.ttsArray.add(text);
+        }
     }
 
     @Nullable
