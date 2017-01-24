@@ -17,6 +17,7 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 	private int	resource;
 	private LayoutInflater inflater;
 	private Context context;
+	private String[] positions = { "drawable/gold", "drawable/silver", "drawable/copper" };
 
 	ConstructorListAdapter(Context ctx, int resourceId, List<Players> objects) {
 		super( ctx, resourceId, objects );
@@ -43,7 +44,11 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 			info.setText(text);
 		}
 		ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView1);
-        String uri = "drawable/truck";
+		String uri = "drawable/truck";
+		if (p != null) {
+			int playerPosition = MainActivity.mPlayersList.indexOf(p);
+			if (p.isFinish() && playerPosition < 3) uri = positions[playerPosition];
+		}
         int imageResource = context.getResources().getIdentifier(uri, null, context.getPackageName());
 		Drawable image;
 		if (Build.VERSION.SDK_INT < 22) image = context.getResources().getDrawable(imageResource);

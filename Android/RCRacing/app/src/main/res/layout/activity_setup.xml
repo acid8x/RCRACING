@@ -31,9 +31,10 @@
 
                 <RadioButton
                     android:id="@+id/rbl"
-                    android:text="@string/r1"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/r1"/>
                 <RadioButton
                     android:id="@+id/rb2"
                     android:text="@string/r2"

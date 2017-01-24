@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.NumberPicker;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -62,18 +63,27 @@ public class SetupActivity extends Activity {
             text = "SELECT RACE TYPE";
         }
         tv.setText(text);
+        MainActivity.say(text);
         Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ViewAnimator
                         .animate(view)
-                        .translationX(0, -75)
-                        .translationX(-75, 0)
-                        .repeatCount(3)
-                        .duration(300)
+                        .translationX(0, -150)
+                        .duration(150)
+                        .translationX(-150, 0)
+                        .duration(150)
                         .start();
                 lastState = state;
+                String tts = "";
+                if (value.equals("RACETYPE ")) {
+                    RadioButton rb = (RadioButton) findViewById(radioGroup.getCheckedRadioButtonId());
+                    tts = rb.getText().toString();
+                }
+                else tts = "" + np.getValue() + " " + value;
+                if (value.equals("LIVES ") && np.getValue() == 0) tts = "NO LIVES LIMIT ";
+                MainActivity.say(tts);
                 switch (value) {
                     case "RACETYPE ":
                         int id = radioGroup.getCheckedRadioButtonId();
@@ -100,13 +110,15 @@ public class SetupActivity extends Activity {
                         state = 5;
                         break;
                 }
-                ViewAnimator.animate(ll).translationY(0, 300).scale(1, 0).alpha(1, 0).duration(500).start();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        getViewState(state);
-                    }
-                }, 400);
+                if (MainActivity.raceType != 0) {
+                    ViewAnimator.animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500).start();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            getViewState(state);
+                        }
+                    }, 500);
+                }
             }
         });
 
@@ -116,15 +128,20 @@ public class SetupActivity extends Activity {
             public void onClick(View view) {
                 ViewAnimator
                         .animate(view)
-                        .translationX(0, 75)
-                        .translationX(75, 0)
-                        .repeatCount(3)
-                        .duration(300)
+                        .translationX(0, 150)
+                        .duration(150)
+                        .translationX(150, 0)
+                        .duration(150)
                         .start();
                 switch (value) {
                     case "RACETYPE ":
-                        setResult(Activity.RESULT_CANCELED);
-                        finish();
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                setResult(Activity.RESULT_CANCELED);
+                                finish();
+                            }
+                        }, 500);
                         break;
                     case "LAPS ":
                         lastState = 0;
@@ -137,13 +154,13 @@ public class SetupActivity extends Activity {
                         break;
                 }
                 state = lastState;
-                ViewAnimator.animate(ll).translationY(0, 300).scale(1, 0).alpha(1, 0).duration(500).start();
+                ViewAnimator.animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500).start();
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         getViewState(lastState);
                     }
-                }, 400);
+                }, 500);
             }
         });
 
@@ -208,6 +225,6 @@ public class SetupActivity extends Activity {
 
     private void getView(final View view) {
         view.setAlpha(0);
-        ViewAnimator.animate(view).translationY(-300, 0).scale(0, 1).alpha(0, 1).duration(500).start();
+        ViewAnimator.animate(view).translationY(-500, 0).scale(0, 1).alpha(0, 1).duration(500).start();
     }
 }

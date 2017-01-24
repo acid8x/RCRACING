@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
@@ -34,15 +35,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private static final int ACTION_REQUEST_SETUP = 2;
     private static final int MY_DATA_CHECK_CODE = 3;
 
-    public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, setup = false, connected = false, isTextToSpeech = false;
-    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0, ttsID = 0;
+    public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, connected = false, isTextToSpeech = false;
+    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0;
     public static List<Players> mPlayersList = new ArrayList<>();
     public static List<Integer> mWinnersList = new ArrayList<>();
     private Drawable dConnected, dDisconnected;
     private ListView listView, listView2 = null;
     private BTService mBTService = null;
-    private TextToSpeech tts = null;
-    public static List<String> ttsArray = new ArrayList<>();
+    public static TextToSpeech tts = null;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -71,7 +71,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     if (raceType < 3) {
                         if (raceType == 2) {
                             text += "Race with guns, ";
-                            if (raceLivesNumber > -1) text += raceLivesNumber + " lives each\n";
+                            if (raceLivesNumber > 0) text += raceLivesNumber + " lives each\n";
                             else text += "no lives limit\n";
                         }
                         else text += "Race without guns\n";
@@ -84,8 +84,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     startService(new Intent(getBaseContext(), BTService.class));
                     updateUI();
                 } else {
-                    Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
-                    startActivityForResult(intent, ACTION_REQUEST_SETUP);
+                    exit("Quit RC Racing successfully!");
                 }
                 break;
             case MY_DATA_CHECK_CODE:
@@ -163,11 +162,27 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         }
     }
 
+    public static void say(String s) {
+        if (isTextToSpeech) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_ADD, null, "");
+            else tts.speak(s, TextToSpeech.QUEUE_ADD, null);
+        }
+    }
+
+    public static void sayFlush(String s) {
+        if (isTextToSpeech) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_FLUSH, null, "");
+            else tts.speak(s, TextToSpeech.QUEUE_FLUSH, null);
+        }
+    }
+
     public void onInit(int initStatus) {
         if (initStatus == TextToSpeech.SUCCESS) {
             isTextToSpeech = true;
             tts.setLanguage(Locale.US);
             say("Welcome to R C Racing");
+            Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
+            startActivityForResult(intent, ACTION_REQUEST_SETUP);
         } else if (initStatus == TextToSpeech.ERROR) {
             Toast.makeText(this, "Sorry! Text To Speech failed...", Toast.LENGTH_LONG).show();
         }
@@ -206,15 +221,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         startActivityForResult(checkTTSIntent, MY_DATA_CHECK_CODE);
     }
 
-    private void say(String s) {
-        if (isTextToSpeech) {
-            String UTTERANCE_ID = "";
-            UTTERANCE_ID += ttsID++;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID);
-            else tts.speak(s, TextToSpeech.QUEUE_FLUSH, null);
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -233,11 +239,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             registerReceiver(broadcastUpdate, new IntentFilter("ACTION_UPDATE_UI"));
             broadcastUpdateRegistered = true;
             if (running) updateUI();
-            if (!setup) {
-                setup = true;
-                intent = new Intent(getApplicationContext(), SetupActivity.class);
-                startActivityForResult(intent, ACTION_REQUEST_SETUP);
-            }
         }
     }
 
@@ -263,12 +264,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             final String action = intent.getAction();
             switch (action) {
                 case "ACTION_UPDATE_UI":
-                    if (ttsArray.size() > 0) {
-                        for (String s : ttsArray) {
-                            say(s);
-                        }
-                        ttsArray.clear();
-                    }
                     updateUI();
                     break;
             }
