@@ -46,7 +46,10 @@ public class broadcastReceiver extends BroadcastReceiver {
         if (p == null) {
             p = new Players(id);
             MainActivity.mPlayersList.add(p);
-            MainActivity.say(p.getName() + " join the race");
+            String text = p.getName() + " join the ";
+            if (MainActivity.raceType < 3) text += "race";
+            else text += "battle";
+            MainActivity.say(text);
         } else if (p.isFinish()) return;
         switch (command) {
             case 'D':

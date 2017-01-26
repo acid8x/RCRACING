@@ -9,7 +9,7 @@ struct hPayload { char command; int argument; };
 struct cPayload { int X; int Y; bool LB; bool RB; };
 
 /******************/
-#define THIS_NODE 03
+#define THIS_NODE 01
 /******************/
 
 Pin led[3]{ Pin(14),Pin(15),Pin(16) };

@@ -68,6 +68,7 @@ public class SetupActivity extends Activity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (MainActivity.tts.isSpeaking()) return;
                 ViewAnimator
                         .animate(view)
                         .translationX(0, -150)
@@ -126,6 +127,7 @@ public class SetupActivity extends Activity {
         buttonBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (MainActivity.tts.isSpeaking()) return;
                 ViewAnimator
                         .animate(view)
                         .translationX(0, 150)
