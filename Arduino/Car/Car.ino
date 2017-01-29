@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include <Pin.h>
 #include <PWMServo.h>
 #include <RF24Network.h>
@@ -5,24 +6,17 @@
 #include <IRremote.h>
 #include <elapsedMillis.h>
 
-Pin R = Pin(14);
-Pin G = Pin(15);
-Pin B = Pin(16);
-
 struct hPayload { char command; int argument; };
-struct cPayload { int X; int Y; bool LB; bool RB; };
+struct cPayload { int X; int Y; bool LB; bool RB; bool configButton; };
 
 /******************/
-#define THIS_NODE 01
+#define THIS_NODE 03
 /******************/
 
-#define Channel 115
+Pin led[3]{ Pin(14),Pin(15),Pin(16) };
 
-#define Sender 3
-#define Receiver1 2
-#define Receiver2 4
-#define FWRpin 6
-#define REVpin 5
+Pin FWR = Pin(6);
+Pin REV = Pin(5);
 
 #if (THIS_NODE == 04 || THIS_NODE == 02)
 #define Steering SERVO_PIN_B
@@ -33,10 +27,34 @@ RF24 radio(8, 7);
 #endif
 
 RF24Network network(radio);
-int node_controller, node_new_controller, raceType = 0, lastGate, oldSpeed = 0, gunUse = 0, led = 0;
-bool ledState[3];
 
-bool gunReady = true, turboUse = false, turboReady = true, stopY = false, hasBeenShot = false, controllerConnected = false, reverseStop = false, new_controller_connected = false;
+bool flashLed[3]{ true,true,true };
+
+int node_controller,
+	node_new_controller,
+	raceType = 0,
+	lastGate,
+	gunUse = 0,
+	oldSpeed,
+	centerX,
+	maxX,
+	minX,
+	configOption = 2,
+	rainbowPin = 0;
+
+bool gunReady = true,
+	turboUse = false,
+	turboReady = true,
+	stopY = false,
+	hasBeenShot = false,
+	reverseStop = false,
+	configMode = false,
+	configPress = false,
+	configHold = false,
+	configRelease = false,
+	new_controller_connected = false;
+
+long counting = 0;
 
 PWMServo myservo;
 
@@ -45,57 +63,51 @@ IRsend irsend;
 IRrecv *irrecvs[2];
 decode_results results;
 
-elapsedMillis tGun, tTurbo, tTurboFlash, tHasBeenShot, tHasBeenShotFlash, tRaceType, codeFlash, controllerUpdate;
+elapsedMillis flash, tGun, tTurbo, tHasBeenShot, tRaceType, controllerUpdate, tRainbow;
 
 void setup() {
+	EEPROM.begin();
+	readEEPROM();
 	myservo.attach(Steering);
-	myservo.write(90);
-	digitalWrite(FWRpin, LOW);
-	digitalWrite(REVpin, LOW);
-	pinMode(FWRpin, OUTPUT);
-	pinMode(REVpin, OUTPUT);
-	digitalWrite(FWRpin, LOW);
-	digitalWrite(REVpin, LOW);
-	R.setOutput();
-	R.setHigh();
-	G.setOutput();
-	G.setHigh();
-	B.setOutput();
-	B.setHigh();
+	myservo.write(centerX);
+	FWR.setOutput();
+	FWR.setDutyCycle(0);
+	REV.setOutput();
+	REV.setDutyCycle(0);
+	led[0].setOutputHigh();
+	led[1].setOutputHigh();
+	led[2].setOutputHigh();
 	radio.begin();
 	radio.setDataRate(RF24_250KBPS);
 	radio.setRetries(0, 15);
 	radio.setCRCLength(RF24_CRC_16);
 	radio.setPALevel(RF24_PA_MAX);
 	node_controller = THIS_NODE + 010;
-	node_new_controller = node_controller + 010;
-	network.begin(Channel, THIS_NODE);
-	irrecvs[0] = new IRrecv(Receiver1);
+	node_new_controller = THIS_NODE + 020;
+	network.begin(115, THIS_NODE);
+	irrecvs[0] = new IRrecv(2);
 	irrecvs[0]->enableIRIn();
-	irrecvs[1] = new IRrecv(Receiver2);
+	irrecvs[1] = new IRrecv(4);
 	irrecvs[1]->enableIRIn();
 }
 
 void loop() {
 	network.update();
 	nRF_receive();
-	if (raceType > 0) {
-		if (raceType > 1) checkDamageState();
-		if (raceType > 1) checkShootState();
-		checkTurboState();
-		checkIRState();
+	if (!hasBeenShot && flash > 200) updateLeds();
+	if (!configMode) {
+		if (raceType > 0) {
+			if (raceType > 1) checkDamageState();
+			if (raceType > 1) checkShootState();
+			checkTurboState();
+			checkIRState();
+		}
+		else checkRaceType();
+		if (!stopY && controllerUpdate > 500) {
+			setLed(2, 2);
+			stopY = true;
+		}
 	}
-	else checkRaceType();
-	if (controllerConnected && controllerUpdate > 500) {
-		ledState[2] = B.getState();
-		controllerConnected = false;
-		if (!stopY) stopY = true;
-	}
-	if (stopY) {
-		digitalWrite(FWRpin, HIGH);
-		digitalWrite(REVpin, HIGH);
-	}
-	checkCode();
 }
 
 void nRF_receive(void) {
@@ -103,49 +115,42 @@ void nRF_receive(void) {
 		RF24NetworkHeader header;
 		network.peek(header);
 		if (header.from_node == 0) {
-			if (header.type == 65) {
-				unsigned int i;
-				network.read(header, &i, sizeof(i));
-				handle_host('C', 0);
-			}
-			else {
-				hPayload p;
-				network.read(header, &p, sizeof(p));
-				handle_host(p.command, p.argument);
-			}
+			hPayload p;
+			network.read(header, &p, sizeof(p));
+			handle_host(p.command, p.argument);
 		}
 		else {
-			if (header.from_node == node_controller + 010) new_controller_connected = true;
-			cPayload a;
+      if (header.from_node == node_new_controller && !new_controller_connected) new_controller_connected = true;
+			cPayload a; //int X; int Y; bool LB; bool RB; bool configButton; };
 			network.read(header, &a, sizeof(a));
 			controllerUpdate = 0;
-			if (!controllerConnected) {
-				controllerConnected = true;
-				if (ledState[2]) B.setHigh();
-				else B.setLow();
-				if (!hasBeenShot && stopY) stopY = false;
-			}
-			else handle_controller(a.X, a.Y, a.LB, a.RB);
+			if (!hasBeenShot && stopY) {
+				stopY = false;
+				if (gunReady) setLed(2, 1);
+				else setLed(2, 0);
+			} else handle_controller(a.X, a.Y, a.LB, a.RB, a.configButton);
 		}
 	}
 }
 
-void handle_controller(int X, int Y, bool LB, bool RB) {
-	if (!RB && gunReady) {
-		sendHost('S', 0);
-		gunUse = 1;
-		gunReady = false;
+void handle_controller(int X, int Y, bool LB, bool RB, bool configButton) {
+	configTrigger(LB, RB, configButton);
+	if (!configMode) {
+		if (!RB && gunReady) {
+			sendHost('S', 0);
+			gunUse = 1;
+			gunReady = false;
+		}
+		if (!LB && turboReady) {
+			turboUse = true;
+			turboReady = false;
+		}
 	}
-	if (!LB && turboReady) {
-		turboUse = true;
-		turboReady = false;
-	}
-	if (X < 89) X = map(X, 0, 88, 15, 90);
-	else if (X > 91) X = map(X, 92, 180, 90, 165);
-	else X = 90;
+	if (X <= 90) X = map(X, 0, 90, minX, centerX);
+	else if (X > 90) X = map(X, 91, 180, centerX, maxX);
 	myservo.write(X);
-	int maxValue = 240;
-	if (!turboUse) maxValue = 175;
+	int maxValue = 255;
+	if (!turboUse) maxValue = 200;
 	int Speed = map(Y, 0, 255, maxValue*-1, maxValue);
 	if (reverseStop) {
 		Speed = oldSpeed;
@@ -157,17 +162,21 @@ void handle_controller(int X, int Y, bool LB, bool RB) {
 		if (reverseStop) reverse = !reverse;
 		int pwm = Speed;
 		if (reverse) pwm *= -1;
-		if (pwm > 240) pwm = 240;
-		else if (pwm < 0) pwm = 0;
+		if (pwm > 255) pwm = 255;
+		else if (pwm < 20) pwm = 0;
 		if (reverse) {
-			digitalWrite(FWRpin, LOW);
-			analogWrite(REVpin, pwm);
+			FWR.setDutyCycle(0);
+			REV.setDutyCycle(pwm);
 		}
 		else {
-			analogWrite(FWRpin, pwm);
-			digitalWrite(REVpin, LOW);
+			FWR.setDutyCycle(pwm);
+			REV.setDutyCycle(0);
 		}
 		oldSpeed = Speed;
+	}
+	else if (stopY) {
+		FWR.setDutyCycle(255);
+		REV.setDutyCycle(255);
 	}
 }
 
@@ -201,24 +210,15 @@ void handle_host(char command, int argument) {
 	}
 }
 
-void checkCode() {
-	if (raceType == 0 || !controllerConnected) {
-		if (codeFlash > 333) {
-			R.toggleState();
-			if (raceType == 0) G.toggleState();
-			if (!controllerConnected) B.toggleState();
-			else if (raceType == 0) B.setHigh();
-			codeFlash = 0;
-		}
-	}
-	else if (!R.getState()) R.setHigh();
-}
-
 void checkDamageState() {
 	if (hasBeenShot && tHasBeenShot > 3000) {
 		if (new_controller_connected) sendNewController('d');
-		setState();
 		hasBeenShot = false;
+		setLed(0, 1);
+		if (turboReady) setLed(1, 1);
+		else setLed(1, 0);
+		if (gunReady) setLed(2, 1);
+		else setLed(2, 0);
 		oldSpeed = 256;
 		stopY = false;
 	}
@@ -226,11 +226,10 @@ void checkDamageState() {
 		reverseStop = false;
 	}
 	else if (hasBeenShot) {
-		if (tHasBeenShotFlash > 100) {
-			tHasBeenShotFlash = 0;
-			Toggle(led);
-			led++;
-			if (led == 3) led = 0;
+		if (tRainbow > 75) {
+			led[rainbowPin++].toggleState();
+			if (rainbowPin == 3) rainbowPin = 0;
+			tRainbow = 0;
 		}
 	}
 }
@@ -239,7 +238,7 @@ void checkShootState() {
 	if (gunUse == 1) {
 		if (new_controller_connected) sendNewController('s');
 		tGun = 0;
-		B.setLow();
+		setLed(2, 0);
 		irsend.sendSony(THIS_NODE + 10, 12);
 		gunUse++;
 	}
@@ -256,28 +255,25 @@ void checkShootState() {
 	else if (!gunReady && tGun > 3000) {
 		if (new_controller_connected) sendNewController('S');
 		gunReady = true;
-		B.setHigh();
+		setLed(2, 1);
 	}
 }
 
 void checkTurboState() {
 	if (turboUse && turboReady) {
 		if (new_controller_connected) sendNewController('t');
-		G.setLow();
+		setLed(1, 0);
 		tTurbo = 0;
 		turboReady = false;
 	}
 	else if (!turboReady && tTurbo > 10000) {
-		G.setHigh();
+		setLed(1, 1);
 		turboReady = true;
 		if (new_controller_connected) sendNewController('T');
 	}
-	else if (!turboReady && tTurbo > 5000) {
-		if (turboUse) turboUse = false;
-		if (tTurboFlash > 150) {
-			G.toggleState();
-			tTurboFlash = 0;
-		}
+	else if (turboUse && !turboReady && tTurbo > 5000) {
+		setLed(1, 2);
+		turboUse = false;
 	}
 }
 
@@ -304,8 +300,8 @@ void checkIRState() {
 					stopY = true;
 					reverseStop = true;
 					sendHost('D', code - 10);
-					getState();
 					if (new_controller_connected) sendNewController('D');
+          else sendController(1);
 				}
 			}
 			else if (raceType < 3 && code < 10) {
@@ -326,39 +322,16 @@ void checkRaceType() {
 }
 
 void setRaceType(int i) {
-	switch (i) {
-	case 1:
-		R.setHigh();
-		G.setHigh();
-		B.setLow();
-		break;
-	default:
-		R.setHigh();
-		G.setHigh();
-		B.setHigh();
-		break;
+	if (i != 0) {
+		setLed(0, 1);
+		setLed(1, 1);
 	}
-}
-
-void Toggle(int i) {
-	if (i == 0) R.toggleState();
-	else if (i == 1) G.toggleState();
-	else B.toggleState();
-}
-
-void getState() {
-	ledState[0] = R.getState();
-	ledState[1] = G.getState();
-	ledState[2] = B.getState();
-}
-
-void setState() {
-	if (ledState[0]) R.setHigh();
-	else R.setLow();
-	if (ledState[1]) G.setHigh();
-	else G.setLow();
-	if (ledState[2]) B.setHigh();
-	else B.setLow();
+	else {
+		setLed(0, 2);
+		setLed(1, 2);
+	}
+	if (i == 1)	setLed(2, 0);
+	else setLed(2, 1);
 }
 
 void sendHost(char command, int value) {
@@ -368,19 +341,132 @@ void sendHost(char command, int value) {
 	while (true) {
 		if (network.write(header, &p, sizeof(p))) break;
 		else retry++;
-		if (retry == 5) break;
+		if (retry == 3) break;
 		delay(1);
 	}
 }
 
 void sendNewController(char command) {
-	RF24NetworkHeader header(node_new_controller,command);
-	unsigned int message = 0;
+	RF24NetworkHeader header(node_new_controller);
+	unsigned int message = command;
 	int retry = 0;
 	while (true) {
 		if (network.write(header, &message, sizeof(unsigned int))) break;
 		else retry++;
-		if (retry == 5) break;
+		if (retry == 3) break;
 		delay(1);
+	}
+}
+
+void sendController(int command) {
+  RF24NetworkHeader header(node_controller);
+  unsigned int message = command;
+  int retry = 0;
+  while (true) {
+    if (network.write(header, &message, sizeof(unsigned int))) break;
+    else retry++;
+    if (retry == 3) break;
+    delay(1);
+  }
+}
+
+void setLed(int pin, int state) {
+	if (state == 2) {
+		flashLed[pin] = true;
+	}
+	else {
+		flashLed[pin] = false;
+		if (state == 1) led[pin].setHigh();
+		else led[pin].setLow();
+	}
+}
+
+void updateLeds() {
+	for (int i = 0; i < 3; i++) {
+		if (flashLed[i]) led[i].toggleState();
+	}
+	flash = 0;
+}
+
+void readEEPROM() {
+	delay(100);
+	minX = EEPROM.read(0);
+	delay(100);
+	if (minX > 180) {
+		minX = 0;
+		EEPROM.write(0, minX);
+		delay(100);
+	}
+	centerX = EEPROM.read(1);
+	delay(100);
+	if (centerX > 180) {
+		centerX = 90;
+		EEPROM.write(1, centerX);
+		delay(100);
+	}
+	maxX = EEPROM.read(2);
+	delay(100);
+	if (maxX > 180) {
+		maxX = 180;
+		EEPROM.write(2, maxX);
+		delay(100);
+	}
+}
+
+void updateEEPROM() {
+	delay(100);
+	EEPROM.update(0, minX);
+	delay(100);
+	EEPROM.update(1, centerX);
+	delay(100);
+	EEPROM.update(2, maxX);
+	delay(100);
+}
+
+void configTrigger(bool LB, bool RB, bool configButton) {
+	if (configButton && configPress) {
+		counting = 0;
+		configPress = false;
+		configHold = false;
+		configRelease = true;
+	}
+	else if (configButton && configRelease) configRelease = false;
+	else if (!configButton && !configPress) configPress = true;
+	else if (!configButton && configPress) configHold = true;
+	if (configPress && counting == 0) counting = millis();
+	if (counting > 0 && millis() - counting > 3000) {
+		if (configMode == true) {
+			configMode = false;
+			updateEEPROM();
+			setLed(0, 2);
+			setLed(1, 2);
+			setLed(2, 2);
+		}
+		else {
+			configMode = true;
+			configOption = 0;
+			setLed(0, 2);
+			setLed(1, 0);
+			setLed(2, 0);
+		}
+		counting = -1;
+	}
+	else if (configRelease && configMode == true) {
+		setLed(configOption, 0);
+		configOption++;
+		if (configOption == 3) configOption = 0;
+		setLed(configOption, 2);
+	}
+	if (configMode) {
+		if (!RB) {
+			if (configOption == 0) maxX++;
+			else if (configOption == 1) minX++;
+			else if (configOption == 2) centerX++;
+		}
+		if (!LB) {
+			if (configOption == 0) maxX--;
+			else if (configOption == 1) minX--;
+			else if (configOption == 2) centerX--;
+		}
 	}
 }

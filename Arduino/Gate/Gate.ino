@@ -33,7 +33,6 @@ String packetsArray = "";
 
 void setup(void) {
 #if GATE == 1
-	//Serial.begin(9600);
 	mySerial.begin(9600);
 	radio.begin();
 	radio.setDataRate(RF24_250KBPS);
@@ -77,15 +76,10 @@ void loop(void) {
 	  irsend.sendSony(GATE, 12);
 		timer = 0;
 	}
-} // end loop()
+}
 
 #if GATE == 1
 void sendMessage(char id, char com, char arg) {
-	String debugMessage = "NRF Sending: ";
-	debugMessage += id;
-	debugMessage += com;
-	debugMessage += arg;
-	//Serial.println(debugMessage);
 	bool validPacket = true;
 	if (id < 49 || id > 57) validPacket = false;
 	if (com < 65 || com > 90) validPacket = false;
@@ -114,10 +108,7 @@ void nRF_receive(void) {
 		message += header.from_node;
 		message += payload.command;
 		message += payload.argument;
-		String debugMessage = "NRF Receive: ";
-		debugMessage += message;
-		//Serial.println(debugMessage);
 		mySerial.println(message);
 	}
-} // end nRF_receive()
+}
 #endif
