@@ -3,7 +3,7 @@
 #include <RF24.h>
 
 /*****************/
-#define THIS_NODE 013
+#define THIS_NODE 014
 /*****************/
 
 #define Channel 115
@@ -12,19 +12,13 @@
 #define pinY A0
 #define pinCB 4
 #define pinVIB 2
-
-#if (THIS_NODE == 011)
-#define pinLB 7
-#define pinRB 6
-#else
 #define pinLB 6
 #define pinRB 5
-#endif
 
 RF24 radio(9, 10);
 RF24Network network(radio);
 
-int centerX = 512, centerY = 512, carXcenter, X, Y, minX = 384, minY = 384, maxX = 640, maxY = 640, rumble = 0, rumbleTime;
+int centerX = 512, centerY = 512, carXcenter, X, Y, minX = 384, minY = 384, maxX = 640, maxY = 640, rumble = 0, rumbleTime = 200;
 
 bool on = true, off = false, LB, RB, CB, rumbleON = false;
 
@@ -52,7 +46,7 @@ void setup(void) {
   pinMode(pinCB, INPUT_PULLUP);
   pinMode(pinVIB, OUTPUT);  
   digitalWrite(pinVIB, HIGH);  
-  delay(200);
+  delay(50);
   digitalWrite(pinVIB, LOW);
   pinMode(3, OUTPUT);
   digitalWrite(3, on);
@@ -74,9 +68,10 @@ void loop(void) {
         digitalWrite(pinVIB, LOW); 
         rumble--;
         rumbleON = false;
-      } else
+      } else {
         digitalWrite(pinVIB, HIGH);
         rumbleON = true;
+			}
     }
   }
   if (LB) LB = digitalRead(pinLB);
@@ -103,7 +98,6 @@ void nRF_receive(void) {
       unsigned int i;
       network.read(header, &i, sizeof(i));
       rumble = i;
-      rumbleTime = 1000 / i;
     }
   }
 }

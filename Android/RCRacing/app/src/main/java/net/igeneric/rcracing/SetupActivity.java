@@ -15,11 +15,12 @@ import com.github.florent37.viewanimator.ViewAnimator;
 
 public class SetupActivity extends Activity {
 
-    private static int state = 0, lastState; // 0 racetype, 1 laps, 2 gates, 3 kills
+    private static int state, lastState; // 0 racetype, 1 laps, 2 gates, 3 kills
     private NumberPicker np = null;
     private RadioGroup radioGroup = null;
     private TextView tv = null;
     private RelativeLayout ll = null;
+    private Button button, buttonBack;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -27,6 +28,14 @@ public class SetupActivity extends Activity {
         setRequestedOrientation(MainActivity.activityInfo);
         setContentView(R.layout.activity_setup);
         setResult(Activity.RESULT_CANCELED);
+
+        MainActivity.setupOpened = true;
+
+        button = (Button) findViewById(R.id.button);
+        buttonBack = (Button) findViewById(R.id.buttonBack);
+
+        lastState = 0;
+        state = 0;
 
         np = (NumberPicker) findViewById(R.id.np);
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
@@ -63,21 +72,12 @@ public class SetupActivity extends Activity {
             text = "SELECT RACE TYPE";
         }
         tv.setText(text);
-        MainActivity.say(text);
-        Button button = (Button) findViewById(R.id.button);
+        if (state != -1) MainActivity.say(text);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (MainActivity.tts.isSpeaking()) return;
-                ViewAnimator
-                        .animate(view)
-                        .translationX(0, -150)
-                        .duration(150)
-                        .translationX(-150, 0)
-                        .duration(150)
-                        .start();
                 lastState = state;
-                String tts = "";
+                String tts;
                 if (value.equals("RACETYPE ")) {
                     RadioButton rb = (RadioButton) findViewById(radioGroup.getCheckedRadioButtonId());
                     tts = rb.getText().toString();
@@ -112,31 +112,29 @@ public class SetupActivity extends Activity {
                         break;
                 }
                 if (MainActivity.raceType != 0) {
-                    ViewAnimator.animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500).start();
+                    ViewAnimator
+                            .animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500)
+                            .andAnimate(buttonBack).scale(1, 0).alpha(1, 0).duration(500)
+                            .andAnimate(view).translationX(0, -200).scaleX(-1,-6).scaleY(1,6).alpha(1,0).duration(500)
+                            .thenAnimate(buttonBack).scale(0,1).duration(0)
+                            .thenAnimate(view).translationX(-200, 0).scaleX(-6,-1).scaleY(6,1).duration(0)
+                            .start();
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             getViewState(state);
                         }
-                    }, 500);
+                    }, 550);
                 }
             }
         });
 
-        Button buttonBack = (Button) findViewById(R.id.buttonBack);
         buttonBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (MainActivity.tts.isSpeaking()) return;
-                ViewAnimator
-                        .animate(view)
-                        .translationX(0, 150)
-                        .duration(150)
-                        .translationX(150, 0)
-                        .duration(150)
-                        .start();
                 switch (value) {
                     case "RACETYPE ":
+                        lastState = -1;
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -156,13 +154,19 @@ public class SetupActivity extends Activity {
                         break;
                 }
                 state = lastState;
-                ViewAnimator.animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500).start();
+                ViewAnimator
+                        .animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500)
+                        .andAnimate(button).scaleX(-1, 0).scaleY(1,0).alpha(1, 0).duration(500)
+                        .andAnimate(view).translationX(0, 200).scale(1,6).alpha(1,0).duration(500)
+                        .thenAnimate(button).scaleX(0,-1).scaleY(0,1).duration(0)
+                        .thenAnimate(view).translationX(200, 0).scale(6,1).duration(0)
+                        .start();
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         getViewState(lastState);
                     }
-                }, 500);
+                }, 550);
             }
         });
 
@@ -227,6 +231,6 @@ public class SetupActivity extends Activity {
 
     private void getView(final View view) {
         view.setAlpha(0);
-        ViewAnimator.animate(view).translationY(-500, 0).scale(0, 1).alpha(0, 1).duration(500).start();
+        ViewAnimator.animate(view).translationY(-500, 0).scale(0, 1).alpha(0, 1).duration(500).andAnimate(button).alpha(0, 1).duration(500).andAnimate(buttonBack).alpha(0, 1).duration(500).start();
     }
 }

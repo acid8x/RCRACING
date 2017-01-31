@@ -1,9 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textViewCountdown"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_centerInParent="true"
+        android:alpha="0"
+        android:fontFamily="serif"
+        android:textAlignment="center"
+        android:textSize="36sp"
+        android:textStyle="bold"/>
+
+    <Button
+        android:id="@+id/countdownButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="20dp"
+        android:alpha="0"
+        android:maxLines="2"
+        android:minLines="2"
+        android:padding="15dp"
+        android:text="@string/count"/>
 
     <ImageView
         android:id="@+id/imageView2"
@@ -46,15 +69,15 @@
         android:contentDescription="@string/imageView"
         android:src="@drawable/disconnected"/>
 
-    <ImageView
+    <Button
         android:id="@+id/menuIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="55dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginTop="2dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="5dp"
-        android:contentDescription="@string/imageView"
-        android:src="@android:drawable/ic_menu_manage"/>
+        android:background="@android:drawable/ic_menu_manage"
+        android:contentDescription="@string/imageView"/>
 
 </RelativeLayout>

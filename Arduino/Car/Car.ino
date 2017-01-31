@@ -10,7 +10,7 @@ struct hPayload { char command; int argument; };
 struct cPayload { int X; int Y; bool LB; bool RB; bool configButton; };
 
 /******************/
-#define THIS_NODE 03
+#define CAR_NODE 03
 /******************/
 
 Pin led[3]{ Pin(14),Pin(15),Pin(16) };
@@ -18,21 +18,15 @@ Pin led[3]{ Pin(14),Pin(15),Pin(16) };
 Pin FWR = Pin(6);
 Pin REV = Pin(5);
 
-#if (THIS_NODE == 04 || THIS_NODE == 02)
 #define Steering SERVO_PIN_B
-RF24 radio(7, 8);
-#else
-#define Steering SERVO_PIN_A
-RF24 radio(8, 7);
-#endif
+#define CONTROLLER_NODE CAR_NODE+010
 
+RF24 radio(7, 8);
 RF24Network network(radio);
 
 bool flashLed[3]{ true,true,true };
 
-int node_controller,
-	node_new_controller,
-	raceType = 0,
+int raceType = 0,
 	lastGate,
 	gunUse = 0,
 	oldSpeed,
@@ -45,14 +39,15 @@ int node_controller,
 bool gunReady = true,
 	turboUse = false,
 	turboReady = true,
-	stopY = false,
+	stopY = true,
 	hasBeenShot = false,
 	reverseStop = false,
 	configMode = false,
 	configPress = false,
 	configHold = false,
 	configRelease = false,
-	new_controller_connected = false;
+	code99 = false,
+	forceStop = false;
 
 long counting = 0;
 
@@ -82,9 +77,7 @@ void setup() {
 	radio.setRetries(0, 15);
 	radio.setCRCLength(RF24_CRC_16);
 	radio.setPALevel(RF24_PA_MAX);
-	node_controller = THIS_NODE + 010;
-	node_new_controller = THIS_NODE + 020;
-	network.begin(115, THIS_NODE);
+	network.begin(115, CAR_NODE);
 	irrecvs[0] = new IRrecv(2);
 	irrecvs[0]->enableIRIn();
 	irrecvs[1] = new IRrecv(4);
@@ -108,6 +101,10 @@ void loop() {
 			stopY = true;
 		}
 	}
+	if (stopY) {
+		FWR.setDutyCycle(0);
+		REV.setDutyCycle(0);
+	}
 }
 
 void nRF_receive(void) {
@@ -120,7 +117,6 @@ void nRF_receive(void) {
 			handle_host(p.command, p.argument);
 		}
 		else {
-      if (header.from_node == node_new_controller && !new_controller_connected) new_controller_connected = true;
 			cPayload a; //int X; int Y; bool LB; bool RB; bool configButton; };
 			network.read(header, &a, sizeof(a));
 			controllerUpdate = 0;
@@ -174,10 +170,6 @@ void handle_controller(int X, int Y, bool LB, bool RB, bool configButton) {
 		}
 		oldSpeed = Speed;
 	}
-	else if (stopY) {
-		FWR.setDutyCycle(255);
-		REV.setDutyCycle(255);
-	}
 }
 
 void handle_host(char command, int argument) {
@@ -202,7 +194,10 @@ void handle_host(char command, int argument) {
 		gunReady = argument;
 		break;
 	case 'R':
+		forceStop = argument;
+		code99 = argument;
 		stopY = argument;
+		setRaceType(raceType);
 		break;
 	case 'G':
 		lastGate = argument;
@@ -212,7 +207,6 @@ void handle_host(char command, int argument) {
 
 void checkDamageState() {
 	if (hasBeenShot && tHasBeenShot > 3000) {
-		if (new_controller_connected) sendNewController('d');
 		hasBeenShot = false;
 		setLed(0, 1);
 		if (turboReady) setLed(1, 1);
@@ -225,7 +219,7 @@ void checkDamageState() {
 	else if (reverseStop && tHasBeenShot > 450) {
 		reverseStop = false;
 	}
-	else if (hasBeenShot) {
+	else if (hasBeenShot || code99) {
 		if (tRainbow > 75) {
 			led[rainbowPin++].toggleState();
 			if (rainbowPin == 3) rainbowPin = 0;
@@ -236,24 +230,26 @@ void checkDamageState() {
 
 void checkShootState() {
 	if (gunUse == 1) {
-		if (new_controller_connected) sendNewController('s');
 		tGun = 0;
 		setLed(2, 0);
-		irsend.sendSony(THIS_NODE + 10, 12);
+		irsend.sendSony(CAR_NODE + 10, 12);
 		gunUse++;
 	}
-	else if (gunUse == 2 && tGun > 75) {
+	else if (gunUse == 2 && tGun > 40) {
 		gunUse++;
-		irsend.sendSony(THIS_NODE + 10, 12);
+		irsend.sendSony(CAR_NODE + 10, 12);
 	}
-	else if (gunUse == 3 && tGun > 150) {
+	else if (gunUse == 3 && tGun > 80) {
+		gunUse++;
+		irsend.sendSony(CAR_NODE + 10, 12);
+	}
+	else if (gunUse == 4 && tGun > 120) {
 		gunUse = 0;
-		irsend.sendSony(THIS_NODE + 10, 12);
+		irsend.sendSony(CAR_NODE + 10, 12);
 		irrecvs[0]->enableIRIn();
 		irrecvs[1]->enableIRIn();
 	}
 	else if (!gunReady && tGun > 3000) {
-		if (new_controller_connected) sendNewController('S');
 		gunReady = true;
 		setLed(2, 1);
 	}
@@ -261,7 +257,6 @@ void checkShootState() {
 
 void checkTurboState() {
 	if (turboUse && turboReady) {
-		if (new_controller_connected) sendNewController('t');
 		setLed(1, 0);
 		tTurbo = 0;
 		turboReady = false;
@@ -269,7 +264,6 @@ void checkTurboState() {
 	else if (!turboReady && tTurbo > 10000) {
 		setLed(1, 1);
 		turboReady = true;
-		if (new_controller_connected) sendNewController('T');
 	}
 	else if (turboUse && !turboReady && tTurbo > 5000) {
 		setLed(1, 2);
@@ -281,27 +275,27 @@ void checkIRState() {
 	int value[2] = { -1,-1 };
 	for (int i = 0; i < 2; i++) {
 		if (irrecvs[i]->decode(&results)) {
-			if (results.value < 16) value[i] = results.value;
+			if (results.value < 16 || results.value == 99) value[i] = results.value;
 			irrecvs[i]->resume();
 		}
 	}
 	int code = 0;
 	if (value[0] != -1 || value[1] != -1) {
 		if (value[1] == value[0]) code = value[0];
-		else if (value[0] == -1 && value[1] < 16) code = value[1];
-		else if (value[1] == -1 && value[0] < 16) code = value[0];
+		else if (value[0] == -1 && (value[1] < 16 || value[1] == 99)) code = value[1];
+		else if (value[1] == -1 && (value[0] < 16 || value[0] == 99)) code = value[0];
 	}
 	if (code > 0) {
 		if (raceType > 0 && raceType < 4) {
+			if (code99 && code < 10 && !forceStop) code99 = false;
 			if (raceType > 1 && code > 10) {
 				if (tHasBeenShot > 5000) {
+					sendController(1);
 					tHasBeenShot = 0;
 					hasBeenShot = true;
 					stopY = true;
 					reverseStop = true;
 					sendHost('D', code - 10);
-					if (new_controller_connected) sendNewController('D');
-          else sendController(1);
 				}
 			}
 			else if (raceType < 3 && code < 10) {
@@ -309,6 +303,10 @@ void checkIRState() {
 					lastGate = code;
 					sendHost('G', code);
 				}
+			}
+			else if (code == 66) {
+				code99 = true;
+				stopY = true;
 			}
 		}
 	}
@@ -346,21 +344,8 @@ void sendHost(char command, int value) {
 	}
 }
 
-void sendNewController(char command) {
-	RF24NetworkHeader header(node_new_controller);
-	unsigned int message = command;
-	int retry = 0;
-	while (true) {
-		if (network.write(header, &message, sizeof(unsigned int))) break;
-		else retry++;
-		if (retry == 3) break;
-		delay(1);
-	}
-}
-
-void sendController(int command) {
-  RF24NetworkHeader header(node_controller);
-  unsigned int message = command;
+void sendController(unsigned int message) {
+  RF24NetworkHeader header(CONTROLLER_NODE);
   int retry = 0;
   while (true) {
     if (network.write(header, &message, sizeof(unsigned int))) break;

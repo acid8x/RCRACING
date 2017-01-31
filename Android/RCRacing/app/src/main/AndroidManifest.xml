@@ -20,6 +20,10 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".WelcomeActivity"
+            android:theme="@android:style/Theme.Holo.Light.Panel">
+        </activity>
+        <activity
             android:name=".SetupActivity"
             android:theme="@style/theme">
         </activity>

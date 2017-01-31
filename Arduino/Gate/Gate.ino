@@ -5,11 +5,11 @@
 #include <IRremote.h>
 
 #define GATE 1
-#define REPEAT_RATE_IN_MS 75
+#define REPEAT_RATE_IN_MS 100
 
 IRsend irsend;
 
-elapsedMillis timer = 0;
+elapsedMillis timer;
 
 #if GATE == 1
 #define Channel 115
@@ -22,6 +22,8 @@ RF24Network network(radio);
 String inputString = "";
 bool read = false;
 int index = 0;
+
+int ircode;
 
 struct Payload_host {
 	char command;
@@ -41,6 +43,7 @@ void setup(void) {
 	radio.setPALevel(RF24_PA_MAX);
 	network.begin(Channel, 0);
 #endif
+	ircode = GATE;
 } // end setup()
 
 void loop(void) {
@@ -53,8 +56,15 @@ void loop(void) {
 			read = true;
 			inputString = "";
 			index = 0;
-		} else if (inChar == '#') packetsArray += "1C02C03C04C05C0";
-		else if (read && inChar > 32 && inChar < 123) {
+		} else if (inChar == '#') {
+			for (char i = 49; i < 54; i++) sendMessage(i, 'C', '0');
+		} else if (inChar == '^') {
+			ircode = 99;
+			for (char i = 49; i < 54; i++) sendMessage(i, 'R', '1');
+		} else if (inChar == '*') {
+			ircode = GATE;
+			for (char i = 49; i < 54; i++) sendMessage(i, 'R', '0');
+		} else if (read && inChar > 32 && inChar < 123) {
 			inputString += inChar;
 			index++;
 			if (index == 3) {
@@ -63,17 +73,20 @@ void loop(void) {
 			}
 		}
 	}
+	if (packetsArray.length() > 2) {
+		String temp = "";
+		for (int i = 3; i < packetsArray.length(); i++) temp += packetsArray[i];
+		sendMessage(packetsArray[0], packetsArray[1], packetsArray[2]);
+		packetsArray = temp;
+	}
 #endif
 	if (timer > REPEAT_RATE_IN_MS) {
-    if (packetsArray.length() > 2) {
-      String temp = "";
-      for (int i = 3; i < packetsArray.length(); i++) {
-        temp += packetsArray[i];
-      }
-      sendMessage(packetsArray[0],packetsArray[1],packetsArray[2]);
-      packetsArray = temp;
-    }
-	  irsend.sendSony(GATE, 12);
+		int toSend;
+		if (ircode == 99) toSend = 66;
+		else toSend = ircode;
+		irsend.sendSony(toSend, 12);
+		delay(40);
+		irsend.sendSony(toSend, 12);
 		timer = 0;
 	}
 }
@@ -89,12 +102,10 @@ void sendMessage(char id, char com, char arg) {
 		p.command = com;
 		p.argument = arg - 48;
 		RF24NetworkHeader header(id - 48);
-    int retry = 0;
-		while(true) {
-		  if (network.write(header, &p, sizeof(p))) break;
-		  else retry++;
-      if (retry == 5) break;
-      delay(1);
+		if (!network.write(header, &p, sizeof(p))) {
+			packetsArray += id;
+			packetsArray += com;
+			packetsArray += arg;
 		}
 	}
 }
