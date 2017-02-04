@@ -5,14 +5,9 @@
     <string name="imageView2">imageView2</string>
     <string name="imageView3">imageView3</string>
     <string name="tvRaceType"> </string>
-    <string name="paramsRaceType">Select race type</string>
-    <string name="paramsLaps">How many laps ?</string>
-    <string name="paramsGates">How many gates ?</string>
-    <string name="paramsKills">How many kills ?</string>
-    <string name="paramsLives">How many lives ?</string>
-    <string name="r1">Race Only, No Weapons</string>
-    <string name="r2">Race with Weapons</string>
-    <string name="r3">Krush Kill \'N\' Destroy</string>
+    <string name="r1">RACE</string>
+    <string name="r2">BATTLE</string>
+    <string name="r3">HUNTING</string>
     <string name="sb0">1</string>
     <string name="sb1">2</string>
     <string name="sb10">10</string>

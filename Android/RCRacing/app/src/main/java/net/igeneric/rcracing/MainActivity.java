@@ -15,7 +15,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
@@ -33,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
+public class MainActivity extends Activity implements TextToSpeech.OnInitListener, View.OnClickListener {
 
     private static final int ACTION_REQUEST_PERMISSION = 0;
     private static final int ACTION_REQUEST_ENABLE = 1;
@@ -45,12 +44,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0;
     public static List<Players> mPlayersList = new ArrayList<>();
     public static List<Integer> mWinnersList = new ArrayList<>();
+    public static TextToSpeech tts = null;
     private Drawable dConnected, dDisconnected;
     private ListView listView, listView2 = null;
     private BTService mBTService = null;
-    public static TextToSpeech tts = null;
-    private Button countdown;
-
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
@@ -64,6 +61,25 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             mBTService.scanLeDevice();
         }
     };
+    private Button countdown;
+    private BroadcastReceiver broadcastUpdate = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            switch (action) {
+                case "ACTION_UPDATE_UI":
+                    updateUI();
+                    break;
+            }
+        }
+    };
+
+    public static void say(String s) {
+        if (isTextToSpeech) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_ADD, null, s);
+            else tts.speak(s, TextToSpeech.QUEUE_ADD, null);
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -91,8 +107,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                             text += "Race with guns, ";
                             if (raceLivesNumber > 0) text += raceLivesNumber + " lives each\n";
                             else text += "no lives limit\n";
-                        }
-                        else text += "Race without guns\n";
+                        } else text += "Race without guns\n";
                         text += "Complete " + raceLapsNumber + " laps, with " + raceGatesNumber + " gates per lap";
                     } else if (raceType == 3) {
                         text += "Search & Destroy\nFirst to make " + raceKillsNumber + " kills";
@@ -100,6 +115,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     }
                     rt.setText(text);
                     startService(new Intent(getBaseContext(), BTService.class));
+                    listView.setAlpha(1);
+                    countdown.setAlpha(1);
                     updateUI();
                 } else {
                     setupOpened = true;
@@ -117,12 +134,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     installTTSIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
                     startActivity(installTTSIntent);
                 }
+                Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
+                startActivityForResult(intent, ACTION_REQUEST_WELCOME);
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    // PERMISSIONS CHECK
     private void checkSelfPermissions() {
         if (Build.VERSION.SDK_INT >= 23) {
             String[] permissions = new String[]{
@@ -149,7 +167,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         }
     }
 
-    // CUSTOM FUNCTIONS
     private void exit(String msg) {
         if (msg != null) Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
         if (mBTService != null) {
@@ -174,7 +191,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     ImageView connectionState = (ImageView) findViewById(R.id.connectionState);
                     if (connected) connectionState.setImageDrawable(dConnected);
                     else connectionState.setImageDrawable(dDisconnected);
-                    ViewAnimator.animate(connectionState).scale(1,0,1,2,1,0,1,2,1).duration(2000).start();
+                    ViewAnimator.animate(connectionState).rubber().duration(1000).repeatCount(4).start();
                 }
                 if (connected && countdown.isClickable() && !setupOpened) countdown.setAlpha(1);
                 if (!setupOpened) {
@@ -193,35 +210,20 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         });
     }
 
-    public static void say(String s) {
-        if (isTextToSpeech) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) tts.speak(s, TextToSpeech.QUEUE_ADD, null, s);
-            else tts.speak(s, TextToSpeech.QUEUE_ADD, null);
-        }
-    }
-
     public void onInit(int initStatus) {
         if (initStatus == TextToSpeech.SUCCESS) {
             isTextToSpeech = true;
             tts.setLanguage(Locale.US);
             say("Welcome to R C Racing");
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
-                    startActivityForResult(intent, ACTION_REQUEST_WELCOME);
-                }
-            },2000);
         } else if (initStatus == TextToSpeech.ERROR) {
             Toast.makeText(this, "Sorry! Text To Speech failed...", Toast.LENGTH_LONG).show();
         }
     }
 
-    // ANDROID MAIN EVENTS
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        int orientation = getResources().getConfiguration().orientation; // 1 PORTRAIT, 2 LANDSCAPE
-        int rotation = getWindowManager().getDefaultDisplay().getRotation(); // 0 0, 1 90, 2 180, 3 270
+        int orientation = getResources().getConfiguration().orientation;
+        int rotation = getWindowManager().getDefaultDisplay().getRotation();
         if (orientation == 2) {
             landscape = true;
             if (rotation < 2) activityInfo = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
@@ -237,56 +239,21 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         Intent checkTTSIntent = new Intent();
         checkTTSIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
         startActivityForResult(checkTTSIntent, MY_DATA_CHECK_CODE);
-        final TextView tvCountdown = (TextView) findViewById(R.id.textViewCountdown);
         checkSelfPermissions();
         if (Build.VERSION.SDK_INT >= 21) {
             dConnected = getDrawable(R.drawable.connected);
             dDisconnected = getDrawable(R.drawable.disconnected);
-        }
-        else {
+        } else {
             dConnected = getResources().getDrawable(R.drawable.connected);
             dDisconnected = getResources().getDrawable(R.drawable.disconnected);
         }
         countdown = (Button) findViewById(R.id.countdownButton);
-        countdown.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View view) {
-                 countdown.setClickable(false);
-                 countdown.setAlpha(0);
-                 say("Ladies and gentleman. Start your engine!");
-                 new CountDownTimer(11000, 1000) {
-                     public void onTick(long millisUntilFinished) {
-                         int i = (int) (millisUntilFinished / 1000);
-                         i--;
-                         String s = "";
-                         if (i != 0) s += i;
-                         else s = "GO";
-                         if (i < 6) say(s);
-                         tvCountdown.setText(s);
-                         if (i != 0) ViewAnimator.animate(tvCountdown).scale(0, 3).alpha(0, 1).decelerate().duration(333).thenAnimate(tvCountdown).scale(3, 0).alpha(1, 0).accelerate().duration(333).start();
-                         else ViewAnimator.animate(tvCountdown).scale(0, 3).alpha(0, 1).duration(100).thenAnimate(tvCountdown).scale(3, 0).alpha(1, 0).duration(3000).start();
-                     }
-
-                     public void onFinish() {
-                         raceStarting = false;
-                         BTService.restoreAll();
-                     }
-                 }.start();
-             }
-        });
+        countdown.setOnClickListener(this);
         Button start = (Button) findViewById(R.id.menuIcon);
-        start.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                raceType = 0;
-                raceStarting = false;
-                setupOpened = true;
-                BTService.clearRaceType();
-                Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
-                startActivityForResult(intent, ACTION_REQUEST_WELCOME);
-            }
-        });
-        listView = (ListView) findViewById( R.id.listView);
+        start.setOnClickListener(this);
+        listView = (ListView) findViewById(R.id.listView);
+        listView.setAlpha(0);
+        countdown.setAlpha(0);
         Collections.sort(mPlayersList);
     }
 
@@ -327,15 +294,46 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         super.onDestroy();
     }
 
-    private BroadcastReceiver broadcastUpdate = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            switch (action) {
-                case "ACTION_UPDATE_UI":
-                    updateUI();
-                    break;
-            }
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.countdownButton:
+                countdown.setClickable(false);
+                countdown.setAlpha(0);
+                say("Ladies and gentleman. Start your engine!");
+                new CountDownTimer(11000, 1000) {
+                    public void onTick(long millisUntilFinished) {
+                        TextView tvCountdown = (TextView) findViewById(R.id.textViewCountdown);
+                        int i = (int) (millisUntilFinished / 1000);
+                        i--;
+                        String s = "";
+                        if (i != 0) s += i;
+                        else {
+                            BTService.restoreAll();
+                            s = "GO";
+                        }
+                        if (i < 6) say(s);
+                        tvCountdown.setText(s);
+                        if (i != 0) ViewAnimator.animate(tvCountdown).scale(0, 3).alpha(0, 1).decelerate().duration(333).thenAnimate(tvCountdown).scale(3, 0).alpha(1, 0).accelerate().duration(333).start();
+                        else ViewAnimator.animate(tvCountdown).scale(0, 3).alpha(0, 1).duration(100).thenAnimate(tvCountdown).scale(3, 0).alpha(1, 0).duration(3000).start();
+                    }
+
+                    public void onFinish() {
+                        raceStarting = false;
+                    }
+                }.start();
+                break;
+            case R.id.menuIcon:
+                raceType = 0;
+                raceStarting = false;
+                setupOpened = true;
+                BTService.clearRaceType();
+                countdown.setClickable(true);
+                countdown.setAlpha(0);
+                listView.setAlpha(0);
+                Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
+                startActivityForResult(intent, ACTION_REQUEST_WELCOME);
+                break;
         }
-    };
+    }
 }
