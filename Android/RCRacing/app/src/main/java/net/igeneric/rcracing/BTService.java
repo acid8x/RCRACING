@@ -44,10 +44,12 @@ public class BTService extends Service {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 mConnected = true;
+                MainActivity.say("Bluetooth connected");
                 sendBroadcast(new Intent("ACTION_UPDATE_UI"));
                 mBluetoothGatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mConnected = false;
+                MainActivity.say("Bluetooth disconnected");
                 sendBroadcast(new Intent("ACTION_UPDATE_UI"));
             }
         }

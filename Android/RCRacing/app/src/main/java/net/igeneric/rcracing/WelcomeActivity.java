@@ -18,22 +18,27 @@ public class WelcomeActivity extends Activity {
         setResult(Activity.RESULT_CANCELED);
 
         final Button button = (Button) findViewById(R.id.startButton);
-        ViewAnimator.animate(button).translationX(-500, 0).alpha(0, 1).scale(0, 1).duration(500).decelerate().start();
+        ViewAnimator.animate(button).translationX(-1000, 0).alpha(0, 1).scale(0, 1).duration(1000).decelerate().start();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ViewAnimator.animate(button).scale(1f,1.1f,1f).duration(3000).repeatCount(-1).start();
+            }
+        }, 1000);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 MainActivity.say("New Race");
-                ViewAnimator.animate(button).scale(1,2,1).duration(500).thenAnimate(button).translationX(0, 500).alpha(1, 0).scale(1, 0).duration(500).accelerate().start();
+                ViewAnimator.animate(button).scale(1,2,1).duration(500).thenAnimate(button).translationX(0, 1000).alpha(1, 0).scale(1, 0).duration(1000).accelerate().start();
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         setResult(Activity.RESULT_OK);
                         finish();
                     }
-                }, 1000);
+                }, 1500);
             }
         });
     }
-
 }

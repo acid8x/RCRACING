@@ -2,10 +2,12 @@ package net.igeneric.rcracing;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -92,7 +94,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
                     startActivityForResult(intent, ACTION_REQUEST_SETUP);
                 } else {
-                    exit("Quit RC Racing successfully!");
+                    exit(null);
                 }
                 break;
             case ACTION_REQUEST_SETUP:
@@ -168,7 +170,51 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     private void exit(String msg) {
-        if (msg != null) Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
+        if (msg != null) {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+            alertDialog.setTitle("ERROR");
+            alertDialog.setMessage(msg);
+            alertDialog.setCancelable(false);
+            alertDialog.setPositiveButton("OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            quit();
+                        }
+                    });
+            alertDialog.show();
+        }
+        else {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+            alertDialog.setTitle("Keep game running...");
+            alertDialog.setMessage("Keep this game running in background ?");
+            alertDialog.setCancelable(true);
+            alertDialog.setPositiveButton("YES",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            keep();
+                        }
+                    });
+            alertDialog.setNeutralButton("CANCEL",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            setupOpened = true;
+                            BTService.restoreAll();
+                            raceStarting = false;
+                            Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
+                            startActivityForResult(intent, ACTION_REQUEST_WELCOME);
+                        }
+                    });
+            alertDialog.setNegativeButton("NO",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            quit();
+                        }
+                    });
+            alertDialog.show();
+        }
+    }
+
+    private void quit() {
         if (mBTService != null) {
             mBTService.disconnect();
             mBTService.close();
@@ -180,6 +226,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         if (Build.VERSION.SDK_INT >= 21) finishAndRemoveTask();
         finish();
         System.exit(0);
+    }
+
+    private void keep() {
+        moveTaskToBack(true);
     }
 
     public void updateUI() {
