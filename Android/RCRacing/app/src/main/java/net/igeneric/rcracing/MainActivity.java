@@ -43,7 +43,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private static final int MY_DATA_CHECK_CODE = 4;
 
     public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, started = false, connected = false, raceStarting = false, setupOpened = true, isTextToSpeech = false;
-    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0;
+    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0, currentActivity = -1;
     public static List<Players> mPlayersList = new ArrayList<>();
     public static List<Integer> mWinnersList = new ArrayList<>();
     public static TextToSpeech tts = null;
@@ -94,7 +94,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
                     startActivityForResult(intent, ACTION_REQUEST_SETUP);
                 } else {
-                    exit(null);
+                    exit(null, ACTION_REQUEST_WELCOME);
                 }
                 break;
             case ACTION_REQUEST_SETUP:
@@ -170,6 +170,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     private void exit(String msg) {
+        exit(msg,-1);
+    }
+
+    private void exit(String msg, final int i) {
         if (msg != null) {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
             alertDialog.setTitle("ERROR");
@@ -191,17 +195,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             alertDialog.setPositiveButton("YES",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            keep();
+                            keep(i);
                         }
                     });
             alertDialog.setNeutralButton("CANCEL",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            setupOpened = true;
-                            BTService.restoreAll();
-                            raceStarting = false;
-                            Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
-                            startActivityForResult(intent, ACTION_REQUEST_WELCOME);
+                            currentActivity = i;
+                            onResume();
                         }
                     });
             alertDialog.setNegativeButton("NO",
@@ -228,7 +229,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         System.exit(0);
     }
 
-    private void keep() {
+    private void keep(int i) {
+        currentActivity = i;
         moveTaskToBack(true);
     }
 
@@ -325,6 +327,18 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             registerReceiver(broadcastUpdate, new IntentFilter("ACTION_UPDATE_UI"));
             broadcastUpdateRegistered = true;
             if (running) updateUI();
+        }
+        if (currentActivity != -1) {
+            switch (currentActivity) {
+                case ACTION_REQUEST_WELCOME:
+                    currentActivity = -1;
+                    setupOpened = true;
+                    BTService.restoreAll();
+                    raceStarting = false;
+                    Intent intent2 = new Intent(getApplicationContext(), WelcomeActivity.class);
+                    startActivityForResult(intent2, ACTION_REQUEST_WELCOME);
+                    break;
+            }
         }
     }
 

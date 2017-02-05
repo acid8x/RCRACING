@@ -22,7 +22,7 @@ public class WelcomeActivity extends Activity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                ViewAnimator.animate(button).scale(1f,1.1f,1f).duration(3000).repeatCount(-1).start();
+                ViewAnimator.animate(button).scale(1f,1.15f,1f).duration(3000).repeatCount(-1).start();
             }
         }, 1000);
 
