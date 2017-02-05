@@ -307,6 +307,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         listView.setAlpha(0);
         countdown.setAlpha(0);
         Collections.sort(mPlayersList);
+        for (int i = 0; i < 6; i++) {
+            Players p = new Players(i);
+            mPlayersList.add(p);
+        }
     }
 
     @Override
@@ -362,6 +366,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.countdownButton:
+                if (!landscape) ViewAnimator.animate(listView).alpha(1f,0.1f).duration(1000).decelerate().start();
+                else {
+                    ViewAnimator.animate(listView).alpha(1f,0.1f).duration(1000).andAnimate(listView2).alpha(1f,0.1f).duration(1000).decelerate().start();
+                }
                 countdown.setClickable(false);
                 countdown.setAlpha(0);
                 say("Ladies and gentleman. Start your engine!");
@@ -375,11 +383,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                         else {
                             BTService.restoreAll();
                             s = "GO";
+                            if (!landscape) ViewAnimator.animate(listView).alpha(0.1f,1f).duration(1000).accelerate().start();
+                            else {
+                                ViewAnimator.animate(listView).alpha(0.1f,1f).duration(1000).andAnimate(listView2).alpha(0.1f,1f).duration(1000).accelerate().start();
+                            }
                         }
                         if (i < 6) say(s);
                         tvCountdown.setText(s);
-                        if (i != 0) ViewAnimator.animate(tvCountdown).scale(0, 3).alpha(0, 1).decelerate().duration(333).thenAnimate(tvCountdown).scale(3, 0).alpha(1, 0).accelerate().duration(333).start();
-                        else ViewAnimator.animate(tvCountdown).scale(0, 3).alpha(0, 1).duration(100).thenAnimate(tvCountdown).scale(3, 0).alpha(1, 0).duration(3000).start();
+                        if (i != 0) ViewAnimator.animate(tvCountdown).scale(0, 5).alpha(0, 1).decelerate().duration(333).thenAnimate(tvCountdown).scale(5, 0).alpha(1, 0).accelerate().duration(333).start();
+                        else ViewAnimator.animate(tvCountdown).scale(0, 5).alpha(0, 1).duration(100).thenAnimate(tvCountdown).scale(5, 0).alpha(1, 0).duration(3000).start();
                     }
 
                     public void onFinish() {
@@ -399,5 +411,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 startActivityForResult(intent, ACTION_REQUEST_WELCOME);
                 break;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        keep(currentActivity);
     }
 }
