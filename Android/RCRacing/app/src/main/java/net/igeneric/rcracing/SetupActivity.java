@@ -1,31 +1,26 @@
 package net.igeneric.rcracing;
 
 import android.app.Activity;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import com.github.florent37.viewanimator.ViewAnimator;
 
 public class SetupActivity extends Activity {
 
-    private static int state, lastState, rbId;
+    private static int state, lastState; // 0 racetype, 1 laps, 2 gates, 3 kills
     private NumberPicker np = null;
     private RadioGroup radioGroup = null;
     private TextView tv = null;
-    private LinearLayout ll = null;
+    private RelativeLayout ll = null;
     private Button button, buttonBack;
-    private Drawable on, off;
-    private ToggleButton tb;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,47 +31,16 @@ public class SetupActivity extends Activity {
 
         MainActivity.setupOpened = true;
 
-        if (Build.VERSION.SDK_INT < 22) {
-            on = this.getResources().getDrawable(R.drawable.gunactivated);
-            off = this.getResources().getDrawable(R.drawable.gundesactivated);
-        }
-        else {
-            on = this.getDrawable(R.drawable.gunactivated);
-            off = this.getDrawable(R.drawable.gundesactivated);
-        }
-
-        tv = (TextView) findViewById(R.id.tv);
         button = (Button) findViewById(R.id.button);
         buttonBack = (Button) findViewById(R.id.buttonBack);
-        tb = (ToggleButton) findViewById(R.id.tb);
-        tb.setText("");
-        tb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String s;
-                if (tb.isChecked()) {
-                    tb.setBackground(on);
-                    s = "YES";
-                    MainActivity.raceType = 2;
-                }
-                else {
-                    tb.setBackground(off);
-                    s = "NO";
-                    MainActivity.raceType = 1;
-                }
-                tb.setText("");
-                MainActivity.say(s);
-                s = "WEAPONS ? " + s;
-                tv.setText(s);
-            }
-        });
 
         lastState = 0;
         state = 0;
 
         np = (NumberPicker) findViewById(R.id.np);
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
-        ll = (LinearLayout) findViewById(R.id.ll);
+        tv = (TextView) findViewById(R.id.tv);
+        ll = (RelativeLayout) findViewById(R.id.ll);
 
         getViewState(state);
     }
@@ -100,73 +64,51 @@ public class SetupActivity extends Activity {
                     np.setValue(MainActivity.raceLivesNumber);
                     break;
             }
-            if (value.equals("WEAPONS ")) text = "ACTIVATE WEAPONS ?";
-            else text = "HOW MANY " + value + "?";
+            text = "HOW MANY " + value + "?";
         } else {
             if (MainActivity.raceType > 0) {
-                radioGroup.check(rbId);
+                radioGroup.check(MainActivity.raceType-1);
             }
-            text = "SELECT GAME TYPE";
-        }
-        if (state != -1) MainActivity.say(text);
-        if (value.equals("WEAPONS ")) {
-            text = "WEAPONS ? ";
-            if (tb.isChecked()) text += "YES";
-            else text += "NO";
+            text = "SELECT RACE TYPE";
         }
         tv.setText(text);
+        if (state != -1) MainActivity.say(text);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 lastState = state;
                 String tts;
-                switch (value) {
-                    case "TYPE ":
-                        rbId = radioGroup.getCheckedRadioButtonId();
-                        RadioButton rb = (RadioButton) findViewById(rbId);
-                        tts = rb.getText().toString();
-                        break;
-                    case "WEAPONS ":
-                        tts = "WEAPONS ";
-                        if (!tb.isChecked()) tts += "DE";
-                        tts += "ACTIVATED";
-                        break;
-                    default:
-                        tts = "" + np.getValue() + " " + value;
-                        break;
+                if (value.equals("RACETYPE ")) {
+                    RadioButton rb = (RadioButton) findViewById(radioGroup.getCheckedRadioButtonId());
+                    tts = rb.getText().toString();
                 }
+                else tts = "" + np.getValue() + " " + value;
                 if (value.equals("LIVES ") && np.getValue() == 0) tts = "NO LIVES LIMIT ";
                 MainActivity.say(tts);
                 switch (value) {
-                    case "TYPE ":
+                    case "RACETYPE ":
                         int id = radioGroup.getCheckedRadioButtonId();
-                        if (id == R.id.rbl) {
-                            state = 1;
-                            MainActivity.raceType = 1;
-                        }
-                        else state = 4;
-                        if (id == R.id.rb2) MainActivity.raceType = 3;
-                        else if (id == R.id.rb3) MainActivity.raceType = 4;
-                        break;
-                    case "WEAPONS ":
-                        state = 2;
+                        if (id == R.id.rbl) MainActivity.raceType = 1;
+                        else if (id == R.id.rb2) MainActivity.raceType = 2;
+                        else if (id == R.id.rb3) MainActivity.raceType = 3;
+                        state = MainActivity.raceType;
+                        if (state == 2) state = 1;
                         break;
                     case "LAPS ":
                         MainActivity.raceLapsNumber = np.getValue();
-                        state = 3;
+                        state = 2;
                         break;
                     case "GATES ":
                         MainActivity.raceGatesNumber = np.getValue();
-                        state = 5;
+                        state = 4;
                         break;
                     case "KILLS ":
                         MainActivity.raceKillsNumber = np.getValue();
-                        state = 5;
-                        if (MainActivity.raceType == 4) state = 6;
+                        state = 4;
                         break;
                     case "LIVES ":
                         MainActivity.raceLivesNumber = np.getValue();
-                        state = 6;
+                        state = 5;
                         break;
                 }
                 if (MainActivity.raceType != 0) {
@@ -191,7 +133,7 @@ public class SetupActivity extends Activity {
             @Override
             public void onClick(View view) {
                 switch (value) {
-                    case "TYPE ":
+                    case "RACETYPE ":
                         lastState = -1;
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -201,14 +143,11 @@ public class SetupActivity extends Activity {
                             }
                         }, 500);
                         break;
-                    case "WEAPONS ":
+                    case "LAPS ":
                         lastState = 0;
                         break;
-                    case "LAPS ":
-                        lastState = 1;
-                        break;
                     case "GATES ":
-                        lastState = 2;
+                        lastState = 1;
                         break;
                     case "KILLS ":
                         lastState = 0;
@@ -235,17 +174,11 @@ public class SetupActivity extends Activity {
     }
 
     private void getViewState(int id) {
-        if (id == 0) {
+        if (id == 0 && radioGroup.getVisibility() == View.GONE) {
             radioGroup.setVisibility(View.VISIBLE);
-            tb.setVisibility(View.GONE);
             np.setVisibility(View.GONE);
-        } else if (id == 1) {
+        } else if (np.getVisibility() == View.GONE) {
             radioGroup.setVisibility(View.GONE);
-            tb.setVisibility(View.VISIBLE);
-            np.setVisibility(View.GONE);
-        } else {
-            radioGroup.setVisibility(View.GONE);
-            tb.setVisibility(View.GONE);
             np.setVisibility(View.VISIBLE);
         }
         switch (id) {
@@ -253,7 +186,7 @@ public class SetupActivity extends Activity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        numberPicker("TYPE ",0,0,true);
+                        numberPicker("RACETYPE ",0,0,true);
                     }
                 }, 500);
                 break;
@@ -261,7 +194,7 @@ public class SetupActivity extends Activity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        numberPicker("WEAPONS ",0,0,false);
+                        numberPicker("LAPS ", 1, 20,false);
                     }
                 }, 500);
                 break;
@@ -269,7 +202,7 @@ public class SetupActivity extends Activity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        numberPicker("LAPS ", 1, 20,false);
+                        numberPicker("GATES ", 2, 9,false);
                     }
                 }, 500);
                 break;
@@ -277,7 +210,7 @@ public class SetupActivity extends Activity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        numberPicker("GATES ", 2, 9,false);
+                        numberPicker("KILLS ", 1, 50,false);
                     }
                 }, 500);
                 break;
@@ -285,19 +218,11 @@ public class SetupActivity extends Activity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        numberPicker("KILLS ", 1, 50,false);
-                    }
-                }, 500);
-                break;
-            case 5:
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
                         numberPicker("LIVES ", 0, 20,false);
                     }
                 }, 500);
                 break;
-            case 6:
+            case 5:
                 setResult(Activity.RESULT_OK);
                 finish();
                 break;
