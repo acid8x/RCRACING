@@ -10,16 +10,21 @@ struct hPayload { char command; int argument; };
 struct cPayload { int X; int Y; bool LB; bool RB; bool configButton; };
 
 /******************/
-#define CAR_NODE 03
+#define CAR_NODE 05
 /******************/
 
-Pin led[3]{ Pin(14),Pin(15),Pin(16) };
+Pin led[3]{ Pin(A0),Pin(A1),Pin(A2) }; // R, G, B
 
 Pin FWR = Pin(6);
 Pin REV = Pin(5);
 
-#define Steering SERVO_PIN_B
-#define CONTROLLER_NODE CAR_NODE+010
+#if CAR_NODE < 5
+int Steering = SERVO_PIN_B;
+int CONTROLLER_NODE = CAR_NODE + 010;
+#else
+int Steering = -1;
+int CONTROLLER_NODE = -1;
+#endif
 
 RF24 radio(7, 8);
 RF24Network network(radio);
@@ -29,12 +34,14 @@ bool flashLed[3]{ true,true,true };
 int raceType = 0,
 	lastGate,
 	gunUse = 0,
+	Speed = 0,
 	oldSpeed,
 	centerX,
 	maxX,
 	minX,
 	configOption = 2,
-	rainbowPin = 0;
+	rainbowPin = 0,
+	reverseValue;
 
 bool gunReady = true,
 	turboUse = false,
@@ -58,12 +65,12 @@ IRsend irsend;
 IRrecv *irrecvs[2];
 decode_results results;
 
-elapsedMillis flash, tGun, tTurbo, tHasBeenShot, tRaceType, controllerUpdate, tRainbow;
+elapsedMillis flash, tGun, tTurbo, tHasBeenShot, tRaceType, controllerUpdate, tRainbow, reverseTimer;
 
 void setup() {
 	EEPROM.begin();
 	readEEPROM();
-	myservo.attach(Steering);
+	if (Steering != -1) myservo.attach(Steering);
 	myservo.write(centerX);
 	FWR.setOutput();
 	FWR.setDutyCycle(0);
@@ -87,6 +94,7 @@ void setup() {
 void loop() {
 	network.update();
 	nRF_receive();
+	UpdateSpeed(Speed);
 	if (!hasBeenShot && flash > 200) updateLeds();
 	if (!configMode) {
 		if (raceType > 0) {
@@ -101,10 +109,6 @@ void loop() {
 			stopY = true;
 		}
 	}
-	if (stopY) {
-		FWR.setDutyCycle(0);
-		REV.setDutyCycle(0);
-	}
 }
 
 void nRF_receive(void) {
@@ -117,7 +121,7 @@ void nRF_receive(void) {
 			handle_host(p.command, p.argument);
 		}
 		else {
-			cPayload a; //int X; int Y; bool LB; bool RB; bool configButton; };
+			cPayload a; // X, Y, LB, RB, CB
 			network.read(header, &a, sizeof(a));
 			controllerUpdate = 0;
 			if (!hasBeenShot && stopY) {
@@ -144,32 +148,33 @@ void handle_controller(int X, int Y, bool LB, bool RB, bool configButton) {
 	}
 	if (X <= 90) X = map(X, 0, 90, minX, centerX);
 	else if (X > 90) X = map(X, 91, 180, centerX, maxX);
-	myservo.write(X);
+	if (Steering != -1) myservo.write(X);
 	int maxValue = 255;
 	if (!turboUse) maxValue = 200;
-	int Speed = map(Y, 0, 255, maxValue*-1, maxValue);
-	if (reverseStop) {
-		Speed = oldSpeed;
-		oldSpeed = 0;
-	}
-	bool reverse = false;
-	if (Speed < 0) reverse = true;
-	if (!stopY && Speed != oldSpeed) {
-		if (reverseStop) reverse = !reverse;
-		int pwm = Speed;
-		if (reverse) pwm *= -1;
-		if (pwm > 255) pwm = 255;
-		else if (pwm < 20) pwm = 0;
-		if (reverse) {
-			FWR.setDutyCycle(0);
-			REV.setDutyCycle(pwm);
-		}
-		else {
-			FWR.setDutyCycle(pwm);
-			REV.setDutyCycle(0);
-		}
-		oldSpeed = Speed;
-	}
+	Speed = map(Y, 0, 255, maxValue*-1, maxValue);
+}
+
+void UpdateSpeed(int value) {
+  if (stopY) value = 0;
+  else if (value == oldSpeed) return;
+  else oldSpeed = value;
+  if (reverseStop) {
+    if (reverseTimer > 333) reverseStop = false;
+    else value = reverseValue;
+  }
+  bool reverse = false;
+  if (value < 0) reverse = true;
+  if (reverse) value *= -1;
+  if (value > 255) value = 255;
+  else if (value < 20) value = 0;
+  if (reverse) {
+    FWR.setDutyCycle(0);
+    REV.setDutyCycle(value);
+  }
+  else {
+    FWR.setDutyCycle(value);
+    REV.setDutyCycle(0);
+  }
 }
 
 void handle_host(char command, int argument) {
@@ -295,6 +300,7 @@ void checkIRState() {
 					hasBeenShot = true;
 					stopY = true;
 					reverseStop = true;
+					reverseValue = Speed * -1;
 					sendHost('D', code - 10);
 				}
 			}
@@ -345,14 +351,15 @@ void sendHost(char command, int value) {
 }
 
 void sendController(unsigned int message) {
-  RF24NetworkHeader header(CONTROLLER_NODE);
-  int retry = 0;
-  while (true) {
-    if (network.write(header, &message, sizeof(unsigned int))) break;
-    else retry++;
-    if (retry == 3) break;
-    delay(1);
-  }
+	if (Steering == -1) return;
+	RF24NetworkHeader header(CONTROLLER_NODE);
+	int retry = 0;
+	while (true) {
+		if (network.write(header, &message, sizeof(unsigned int))) break;
+		else retry++;
+		if (retry == 3) break;
+		delay(1);
+	}
 }
 
 void setLed(int pin, int state) {

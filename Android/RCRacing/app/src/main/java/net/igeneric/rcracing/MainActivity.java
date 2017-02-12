@@ -307,10 +307,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         listView.setAlpha(0);
         countdown.setAlpha(0);
         Collections.sort(mPlayersList);
-        for (int i = 0; i < 6; i++) {
-            Players p = new Players(i);
-            mPlayersList.add(p);
-        }
     }
 
     @Override
