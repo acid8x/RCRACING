@@ -10,7 +10,7 @@ struct hPayload { char command; int argument; };
 struct cPayload { int X; int Y; bool LB; bool RB; bool configButton; };
 
 /******************/
-#define CAR_NODE 01
+#define CAR_NODE 03
 /******************/
 
 Pin led[3]{ Pin(14),Pin(15),Pin(16) };
@@ -29,14 +29,12 @@ bool flashLed[3]{ true,true,true };
 int raceType = 0,
 	lastGate,
 	gunUse = 0,
-  Speed = 0,
 	oldSpeed,
 	centerX,
 	maxX,
 	minX,
 	configOption = 2,
-	rainbowPin = 0,
-	reverseValue;
+	rainbowPin = 0;
 
 bool gunReady = true,
 	turboUse = false,
@@ -60,7 +58,7 @@ IRsend irsend;
 IRrecv *irrecvs[2];
 decode_results results;
 
-elapsedMillis flash, tGun, tTurbo, tHasBeenShot, tRaceType, controllerUpdate, tRainbow, reverseTimer;
+elapsedMillis flash, tGun, tTurbo, tHasBeenShot, tRaceType, controllerUpdate, tRainbow;
 
 void setup() {
 	EEPROM.begin();
@@ -89,7 +87,6 @@ void setup() {
 void loop() {
 	network.update();
 	nRF_receive();
-  UpdateSpeed(Speed);
 	if (!hasBeenShot && flash > 200) updateLeds();
 	if (!configMode) {
 		if (raceType > 0) {
@@ -103,6 +100,10 @@ void loop() {
 			setLed(2, 2);
 			stopY = true;
 		}
+	}
+	if (stopY) {
+		FWR.setDutyCycle(0);
+		REV.setDutyCycle(0);
 	}
 }
 
@@ -146,30 +147,29 @@ void handle_controller(int X, int Y, bool LB, bool RB, bool configButton) {
 	myservo.write(X);
 	int maxValue = 255;
 	if (!turboUse) maxValue = 200;
-	Speed = map(Y, 0, 255, maxValue*-1, maxValue);
-}
-
-void UpdateSpeed(int value) {
-  if (stopY) value = 0;
-  else if (value == oldSpeed) return;
-  else oldSpeed = value;
-  if (reverseStop) {
-    if (reverseTimer > 333) reverseStop = false;
-    else value = reverseValue;
-  }
-  bool reverse = false;
-  if (value < 0) reverse = true;
-  if (reverse) value *= -1;
-  if (value > 255) value = 255;
-  else if (value < 20) value = 0;
-  if (reverse) {
-    FWR.setDutyCycle(0);
-    REV.setDutyCycle(value);
-  }
-  else {
-    FWR.setDutyCycle(value);
-    REV.setDutyCycle(0);
-  }
+	int Speed = map(Y, 0, 255, maxValue*-1, maxValue);
+	if (reverseStop) {
+		Speed = oldSpeed;
+		oldSpeed = 0;
+	}
+	bool reverse = false;
+	if (Speed < 0) reverse = true;
+	if (!stopY && Speed != oldSpeed) {
+		if (reverseStop) reverse = !reverse;
+		int pwm = Speed;
+		if (reverse) pwm *= -1;
+		if (pwm > 255) pwm = 255;
+		else if (pwm < 20) pwm = 0;
+		if (reverse) {
+			FWR.setDutyCycle(0);
+			REV.setDutyCycle(pwm);
+		}
+		else {
+			FWR.setDutyCycle(pwm);
+			REV.setDutyCycle(0);
+		}
+		oldSpeed = Speed;
+	}
 }
 
 void handle_host(char command, int argument) {
@@ -295,7 +295,6 @@ void checkIRState() {
 					hasBeenShot = true;
 					stopY = true;
 					reverseStop = true;
-          reverseValue = Speed * -1;
 					sendHost('D', code - 10);
 				}
 			}
