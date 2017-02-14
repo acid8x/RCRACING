@@ -192,13 +192,13 @@ public class BTService extends Service {
             @Override
             public void run() {
                 if (!mConnected) {
-                    if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner.stopScan(mScanCallback);
+                    if (Build.VERSION.SDK_INT >= 21 && mBluetoothLeScanner != null) mBluetoothLeScanner.stopScan(mScanCallback);
                     else mBluetoothAdapter.stopLeScan(mLeScanCallback);
                     scanLeDevice();
                 }
             }
         }, 5000);
-        if (Build.VERSION.SDK_INT >= 21) mBluetoothLeScanner.startScan(filters, settings, mScanCallback);
+        if (Build.VERSION.SDK_INT >= 21 && mBluetoothLeScanner != null) mBluetoothLeScanner.startScan(filters, settings, mScanCallback);
         else mBluetoothAdapter.startLeScan(mLeScanCallback);
     }
 

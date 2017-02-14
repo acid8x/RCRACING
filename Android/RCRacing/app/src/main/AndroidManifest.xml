@@ -20,12 +20,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".WelcomeActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
-        </activity>
-        <activity
             android:name=".SetupActivity"
-            android:theme="@style/theme">
+            android:theme="@android:style/Theme.Holo.Light.Panel">
         </activity>
         <service android:name=".BTService"/>
         <receiver android:name=".broadcastReceiver"

@@ -34,8 +34,6 @@ public class SetupActivity extends Activity {
         setContentView(R.layout.activity_setup);
         setResult(Activity.RESULT_CANCELED);
 
-        MainActivity.setupOpened = true;
-
         if (Build.VERSION.SDK_INT < 22) {
             on = this.getResources().getDrawable(R.drawable.gunactivated);
             off = this.getResources().getDrawable(R.drawable.gundesactivated);
@@ -172,10 +170,10 @@ public class SetupActivity extends Activity {
                 if (MainActivity.raceType != 0) {
                     ViewAnimator
                             .animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500)
-                            .andAnimate(buttonBack).scale(1, 0).alpha(1, 0).duration(500)
-                            .andAnimate(view).translationX(0, -200).scaleX(-1,-6).scaleY(1,6).alpha(1,0).duration(500)
+                            .andAnimate(buttonBack).scale(1,0).alpha(1, 0).duration(500)
+                            .andAnimate(view).translationX(0, 200).scale(1,6).alpha(1,0).duration(500)
                             .thenAnimate(buttonBack).scale(0,1).duration(0)
-                            .thenAnimate(view).translationX(-200, 0).scaleX(-6,-1).scaleY(6,1).duration(0)
+                            .thenAnimate(view).translationX(200, 0).scale(6,1).duration(0)
                             .start();
                     new Handler().postDelayed(new Runnable() {
                         @Override
@@ -217,9 +215,9 @@ public class SetupActivity extends Activity {
                 state = lastState;
                 ViewAnimator
                         .animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500)
-                        .andAnimate(button).scaleX(-1, 0).scaleY(1,0).alpha(1, 0).duration(500)
+                        .andAnimate(button).scale(1,0).alpha(1, 0).duration(500)
                         .andAnimate(view).translationX(0, 200).scale(1,6).alpha(1,0).duration(500)
-                        .thenAnimate(button).scaleX(0,-1).scaleY(0,1).duration(0)
+                        .thenAnimate(button).scale(0,1).duration(0)
                         .thenAnimate(view).translationX(200, 0).scale(6,1).duration(0)
                         .start();
                 new Handler().postDelayed(new Runnable() {

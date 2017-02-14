@@ -13,9 +13,10 @@
         <Button
             android:id="@+id/buttonBack"
             android:layout_width="0dp"
-            android:layout_weight=".2"
             android:layout_height="wrap_content"
+            android:layout_weight=".2"
             android:alpha="0"
+            android:background="@drawable/leftarrow"
             android:textAllCaps="true"
             android:textSize="18sp"
             android:textStyle="bold|italic"/>
@@ -63,7 +64,7 @@
                     android:id="@+id/tb"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/gun"
+                    android:background="@drawable/gunactivated"
                     android:checked="true"
                     android:text=""
                     android:visibility="gone"/>
@@ -80,13 +81,13 @@
         <Button
             android:id="@+id/button"
             android:layout_width="0dp"
-            android:layout_weight=".2"
             android:layout_height="wrap_content"
+            android:layout_weight=".2"
+            android:alpha="0"
+            android:background="@drawable/rightarrow"
             android:textAllCaps="true"
             android:textSize="18sp"
-            android:textStyle="bold|italic"
-            android:alpha="0"
-            android:scaleX="-1"/>
+            android:textStyle="bold|italic"/>
 
     </LinearLayout>
 

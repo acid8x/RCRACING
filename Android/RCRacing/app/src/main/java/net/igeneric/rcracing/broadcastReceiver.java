@@ -71,8 +71,7 @@ public class broadcastReceiver extends BroadcastReceiver {
                 p.addTotalKills();
                 break;
             case 'Z':
-                if (!MainActivity.raceStarting) BTService.sendMessage("&" + id + "C" + MainActivity.raceType);
-                else BTService.stopAll();
+                BTService.sendMessage("&" + id + "C" + MainActivity.raceType);
                 break;
         }
         int positionBefore = MainActivity.mPlayersList.indexOf(p) + 1;
