@@ -17,4 +17,5 @@ dependencies {
     compile 'org.jetbrains:annotations-java5:15.0'
     compile 'com.android.support:support-annotations:25.1.1'
     compile 'com.github.florent37:viewanimator:1.0.5'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta5'
 }
