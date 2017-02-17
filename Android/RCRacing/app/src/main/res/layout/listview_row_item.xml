@@ -1,52 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/rl"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
 
-    <RelativeLayout
+    <ImageView
+        android:id="@+id/ivTruck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_margin="3dp"
-        android:background="@xml/list_selector"
-        android:padding="3dp">
+        android:layout_margin="4dp"
+        app:srcCompat="@drawable/truck"/>
 
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="75dp"
-            android:layout_height="65dp"
-            android:layout_marginEnd="5dp"
-            android:layout_marginStart="5dp"
-            android:contentDescription="@string/imageView1"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="4dp"
+        android:gravity="center"
+        android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvInfo1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/imageView1"
-            android:layout_marginEnd="5dp"
-            android:layout_marginStart="5dp"
-            android:layout_toEndOf="@+id/imageView1"
-            android:text=""
-            android:textColor="#040404"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:typeface="sans"/>
+            android:id="@+id/tvName"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:text="NAME"/>
 
-        <TextView
-            android:id="@+id/tvInfo2"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvInfo1"
-            android:layout_marginEnd="5dp"
-            android:layout_marginStart="5dp"
-            android:layout_toEndOf="@+id/imageView1"
-            android:textColor="#343434"
-            android:textSize="16sp"
-            android:textStyle="bold"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-    </RelativeLayout>
+            <ImageView
+                android:id="@+id/ivKill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/kills2"/>
 
-</RelativeLayout>
+            <TextView
+                android:id="@+id/tvKill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1"/>
+
+            <ImageView
+                android:id="@+id/ivDeath"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/deaths2"/>
+
+            <TextView
+                android:id="@+id/tvDeath"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1"/>
+
+            <ImageView
+                android:id="@+id/ivGates"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/gates2"/>
+
+            <TextView
+                android:id="@+id/tvGates"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1"/>
+
+            <ImageView
+                android:id="@+id/ivLaps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/laps2"/>
+
+            <TextView
+                android:id="@+id/tvLaps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
 
