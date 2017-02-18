@@ -22,9 +22,9 @@ import android.os.IBinder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class BTService extends Service {
+
     private BluetoothManager mBluetoothManager;
     public static BluetoothAdapter mBluetoothAdapter;
     private static BluetoothLeScanner mBluetoothLeScanner;
@@ -35,10 +35,6 @@ public class BTService extends Service {
     public static boolean mConnected = false;
     private static List<String> messagesToSend = null;
 
-    public final static String ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA = "EXTRA_DATA";
-    public final static UUID UUID_BLE_HM10_RX_TX = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
-    public final static UUID UUID_BLE_HM10_SERVICE = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
     private final BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -57,7 +53,7 @@ public class BTService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(UUID_BLE_HM10_SERVICE).getCharacteristic(UUID_BLE_HM10_RX_TX);
+                BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(Constants.UUID_BLE_HM10_SERVICE).getCharacteristic(Constants.UUID_BLE_HM10_RX_TX);
                 mBluetoothGatt.setCharacteristicNotification(mBluetoothGattCharacteristic, true);
                 mBluetoothGatt.readCharacteristic(mBluetoothGattCharacteristic);
             }
@@ -75,8 +71,8 @@ public class BTService extends Service {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             final String data = new String(characteristic.getValue());
             final char[] dataArray = data.toCharArray();
-            final Intent intent = new Intent(ACTION_DATA_AVAILABLE);
-            intent.putExtra(EXTRA_DATA, dataArray);
+            final Intent intent = new Intent(Constants.ACTION_DATA_AVAILABLE);
+            intent.putExtra(Constants.EXTRA_DATA, dataArray);
             sendBroadcast(intent);
         }
     };
@@ -110,7 +106,7 @@ public class BTService extends Service {
                 }
                 str += stringArray;
             }
-            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(UUID_BLE_HM10_SERVICE).getCharacteristic(UUID_BLE_HM10_RX_TX);
+            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(Constants.UUID_BLE_HM10_SERVICE).getCharacteristic(Constants.UUID_BLE_HM10_RX_TX);
             mBluetoothGattCharacteristic.setValue(str.getBytes());
             if (!mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic)) {
                 if (messagesToSend == null) messagesToSend = new ArrayList<>();
@@ -121,7 +117,7 @@ public class BTService extends Service {
 
     public static boolean clearRaceType() {
         if (mConnected) {
-            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(UUID_BLE_HM10_SERVICE).getCharacteristic(UUID_BLE_HM10_RX_TX);
+            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(Constants.UUID_BLE_HM10_SERVICE).getCharacteristic(Constants.UUID_BLE_HM10_RX_TX);
             mBluetoothGattCharacteristic.setValue("#".getBytes());
             while (true) if (mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic)) break;
             return true;
@@ -131,7 +127,7 @@ public class BTService extends Service {
 
     public static boolean stopAll() {
         if (mConnected) {
-            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(UUID_BLE_HM10_SERVICE).getCharacteristic(UUID_BLE_HM10_RX_TX);
+            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(Constants.UUID_BLE_HM10_SERVICE).getCharacteristic(Constants.UUID_BLE_HM10_RX_TX);
             mBluetoothGattCharacteristic.setValue("^".getBytes());
             while (true) if (mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic)) break;
             return true;
@@ -141,7 +137,7 @@ public class BTService extends Service {
 
     public static boolean restoreAll() {
         if (mConnected) {
-            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(UUID_BLE_HM10_SERVICE).getCharacteristic(UUID_BLE_HM10_RX_TX);
+            BluetoothGattCharacteristic mBluetoothGattCharacteristic = mBluetoothGatt.getService(Constants.UUID_BLE_HM10_SERVICE).getCharacteristic(Constants.UUID_BLE_HM10_RX_TX);
             mBluetoothGattCharacteristic.setValue("*".getBytes());
             while (true) if (mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic)) break;
             return true;

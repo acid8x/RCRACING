@@ -171,9 +171,9 @@ public class SetupActivity extends Activity {
                     ViewAnimator
                             .animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500)
                             .andAnimate(buttonBack).scale(1,0).alpha(1, 0).duration(500)
-                            .andAnimate(view).translationX(0, 200).scale(1,6).alpha(1,0).duration(500)
+                            .andAnimate(view).translationX(0, -500).scale(1,6).alpha(1,0).duration(500)
                             .thenAnimate(buttonBack).scale(0,1).duration(0)
-                            .thenAnimate(view).translationX(200, 0).scale(6,1).duration(0)
+                            .thenAnimate(view).translationX(-500, 0).scale(6,1).duration(0)
                             .start();
                     new Handler().postDelayed(new Runnable() {
                         @Override
@@ -216,9 +216,9 @@ public class SetupActivity extends Activity {
                 ViewAnimator
                         .animate(ll).translationY(0, 500).scale(1, 0).alpha(1, 0).duration(500)
                         .andAnimate(button).scale(1,0).alpha(1, 0).duration(500)
-                        .andAnimate(view).translationX(0, 200).scale(1,6).alpha(1,0).duration(500)
+                        .andAnimate(view).translationX(0, 500).scale(1,6).alpha(1,0).duration(500)
                         .thenAnimate(button).scale(0,1).duration(0)
-                        .thenAnimate(view).translationX(200, 0).scale(6,1).duration(0)
+                        .thenAnimate(view).translationX(500, 0).scale(6,1).duration(0)
                         .start();
                 new Handler().postDelayed(new Runnable() {
                     @Override

@@ -17,6 +17,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -29,13 +31,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
+public class MainActivity extends Activity implements TextToSpeech.OnInitListener, View.OnClickListener {
 
-    private static final int ACTION_REQUEST_PERMISSION = 0;
-    private static final int ACTION_REQUEST_ENABLE = 1;
-    private static final int MY_DATA_CHECK_CODE = 2;
-    private static final int ACTION_REQUEST_SETUP = 3;
-
+    public static String debugString = "";
     public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, connected = false, ttsInit = false, isTextToSpeech = false;
     public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0;
     public static List<Players> mPlayersList = new ArrayList<>();
@@ -43,6 +41,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     public static TextToSpeech tts = null;
     private Drawable dConnected, dDisconnected;
     private ListView listView, listView2 = null;
+    private ImageView connectionState;
+    private Button buttonDEBUG;
     private BTService mBTService = null;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -52,9 +52,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            mBTService = ((BTService.LocalBinder) iBinder).getService();
-            if (!mBTService.initialize()) onDestroy();
-            mBTService.scanLeDevice();
+            if (!Constants.DEV_MODE) {
+                mBTService = ((BTService.LocalBinder) iBinder).getService();
+                if (!mBTService.initialize()) onDestroy();
+                mBTService.scanLeDevice();
+            }
         }
     };
     private BroadcastReceiver broadcastUpdate = new BroadcastReceiver() {
@@ -79,10 +81,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case ACTION_REQUEST_ENABLE:
+            case Constants.ACTION_REQUEST_ENABLE:
                 if (resultCode == Activity.RESULT_CANCELED) onDestroy();
                 break;
-            case ACTION_REQUEST_SETUP:
+            case Constants.ACTION_REQUEST_SETUP:
                 if (resultCode == Activity.RESULT_OK) {
                     TextView rt = (TextView) findViewById(R.id.tvRaceType);
                     String text = "";
@@ -103,7 +105,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     updateUI();
                 } else onDestroy();
                 break;
-            case MY_DATA_CHECK_CODE:
+            case Constants.ACTION_REQUEST_DEBUG:
+                final char[] dataArray = debugString.toCharArray();
+                if (dataArray.length == 3) {
+                    final Intent intent = new Intent(Constants.ACTION_DATA_AVAILABLE);
+                    intent.putExtra(Constants.EXTRA_DATA, dataArray);
+                    sendBroadcast(intent);
+                }
+                break;
+            case Constants.MY_DATA_CHECK_CODE:
                 if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                     tts = new TextToSpeech(this, this);
                 } else {
@@ -113,7 +123,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 }
                 ttsInit = true;
                 Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
-                startActivityForResult(intent, ACTION_REQUEST_SETUP);
+                startActivityForResult(intent, Constants.ACTION_REQUEST_SETUP);
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -125,7 +135,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION
             };
-            requestPermissions(permissions, ACTION_REQUEST_PERMISSION);
+            requestPermissions(permissions, Constants.ACTION_REQUEST_PERMISSION);
         }
     }
 
@@ -133,7 +143,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (grantResults.length > 0) {
             switch (requestCode) {
-                case ACTION_REQUEST_PERMISSION:
+                case Constants.ACTION_REQUEST_PERMISSION:
                     for (int results : grantResults) {
                         if (results != PackageManager.PERMISSION_GRANTED) onDestroy();
                         else permissionsGranted++;
@@ -147,9 +157,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (Constants.DEV_MODE) if (buttonDEBUG.getVisibility() == View.INVISIBLE) buttonDEBUG.setVisibility(View.VISIBLE);
                 if (BTService.mConnected != connected) {
                     connected = BTService.mConnected;
-                    ImageView connectionState = (ImageView) findViewById(R.id.connectionState);
                     if (connected) connectionState.setImageDrawable(dConnected);
                     else connectionState.setImageDrawable(dDisconnected);
                     ViewAnimator.animate(connectionState).rubber().duration(1000).repeatCount(4).start();
@@ -204,6 +214,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         listView = (ListView) findViewById(R.id.listView);
         listView.setAlpha(0);
         Collections.sort(mPlayersList);
+        if (Constants.DEV_MODE) {
+            buttonDEBUG = (Button) findViewById(R.id.buttonDEBUG);
+            buttonDEBUG.setOnClickListener(this);
+        }
+        ImageView ivLogo = (ImageView) findViewById(R.id.ivLogo);
+        connectionState = (ImageView) findViewById(R.id.ivBT);
+        ViewAnimator.animate(ivLogo).waitForHeight().translationX(-2000, 0).alpha(0, 1).duration(1000).decelerate()
+                .thenAnimate(connectionState).scale(5,1).alpha(0,1).duration(500).start();
     }
 
     @Override
@@ -211,11 +229,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         super.onResume();
         hasFocus = true;
         Intent intent;
-        if (BTService.mBluetoothAdapter == null || !BTService.mBluetoothAdapter.isEnabled()) {
+        if (!Constants.DEV_MODE) if (BTService.mBluetoothAdapter == null || !BTService.mBluetoothAdapter.isEnabled()) {
             intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(intent, ACTION_REQUEST_ENABLE);
+            startActivityForResult(intent, Constants.ACTION_REQUEST_ENABLE);
         }
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if (!Constants.DEV_MODE) if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             onDestroy();
         }
         if (Build.VERSION.SDK_INT >= 23 && permissionsGranted < 2) {
@@ -232,7 +250,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         if (!ttsInit) {
             intent = new Intent();
             intent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-            startActivityForResult(intent, MY_DATA_CHECK_CODE);
+            startActivityForResult(intent, Constants.MY_DATA_CHECK_CODE);
         }
         if (running) updateUI();
     }
@@ -264,5 +282,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     @Override
     public void onBackPressed() {
         onDestroy();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.buttonDEBUG) {
+            Intent intent = new Intent(getApplicationContext(), debugActivity.class);
+            startActivityForResult(intent, Constants.ACTION_REQUEST_DEBUG);
+        }
     }
 }

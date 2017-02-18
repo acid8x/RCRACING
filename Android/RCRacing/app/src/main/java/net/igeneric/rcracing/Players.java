@@ -16,6 +16,7 @@ class Players implements Comparable<Players> {
     private boolean finish;
     private boolean dead;
     private long currentLap;
+    private int raceType;
 
     Players(int id) {
         this.id = id;
@@ -120,5 +121,13 @@ class Players implements Comparable<Players> {
 
     boolean isDead() {
         return dead;
+    }
+
+    public int getRaceType() {
+        return raceType;
+    }
+
+    public void setRaceType(int raceType) {
+        this.raceType = raceType;
     }
 }

@@ -11,8 +11,8 @@ public class broadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals(BTService.ACTION_DATA_AVAILABLE)) {
-            final char[] array = intent.getCharArrayExtra(BTService.EXTRA_DATA);
+        if (intent.getAction().equals(Constants.ACTION_DATA_AVAILABLE)) {
+            final char[] array = intent.getCharArrayExtra(Constants.EXTRA_DATA);
             String data = "";
             int index = 0;
             boolean read = false;

@@ -8,13 +8,28 @@
     tools:layout_editor_absoluteX="0dp"
     tools:layout_editor_absoluteY="0dp">
 
+    <Button
+        android:id="@+id/buttonDEBUG"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/debug2"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineDebugH"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <ImageView
-        android:id="@+id/imageView2"
+        android:id="@+id/ivLogo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
+        android:alpha="0"
         android:contentDescription="@string/imageView2"
         android:src="@drawable/logo"
         app:layout_constraintBottom_toTopOf="@+id/guideline1"
@@ -43,50 +58,69 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="4dp"
+        android:divider="#0000"
+        android:dividerHeight="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline2"/>
 
     <ImageView
-        android:id="@+id/connectionState"
+        android:id="@+id/ivBT"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="3dp"
+        android:layout_marginStart="4dp"
+        android:alpha="0"
         android:contentDescription="@string/imageView"
         android:src="@drawable/disconnected"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/guideline0"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guidelineDebugH"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.075"
+        tools:layout_editor_absoluteY="45dp"
+        tools:layout_editor_absoluteX="0dp"/>
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.1"/>
+        app:layout_constraintGuide_percent="0.1"
+        tools:layout_editor_absoluteY="59dp"
+        tools:layout_editor_absoluteX="0dp"/>
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.1"/>
+        app:layout_constraintGuide_percent="0.1"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="39dp"/>
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.17"/>
+        app:layout_constraintGuide_percent="0.17"
+        tools:layout_editor_absoluteY="101dp"
+        tools:layout_editor_absoluteX="0dp"/>
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.23"/>
+        app:layout_constraintGuide_percent="0.25"
+        tools:layout_editor_absoluteY="136dp"
+        tools:layout_editor_absoluteX="0dp"/>
 
 </android.support.constraint.ConstraintLayout>
