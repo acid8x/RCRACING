@@ -155,7 +155,8 @@ public class SetupActivity extends Activity {
                         break;
                     case "GATES ":
                         MainActivity.raceGatesNumber = np.getValue();
-                        state = 5;
+                        if (MainActivity.raceType != 1) state = 5;
+                        else state = 6;
                         break;
                     case "KILLS ":
                         MainActivity.raceKillsNumber = np.getValue();

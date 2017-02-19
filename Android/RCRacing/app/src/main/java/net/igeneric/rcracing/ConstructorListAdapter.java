@@ -1,7 +1,6 @@
 package net.igeneric.rcracing;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -11,8 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.github.florent37.viewanimator.ViewAnimator;
-
 import java.util.List;
 
 class ConstructorListAdapter extends ArrayAdapter<Players> {
@@ -20,7 +17,6 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 	private LayoutInflater inflater;
 	private Context context;
 	private String[] positions = { "drawable/gold", "drawable/silver", "drawable/copper" };
-	private boolean anim = false;
 
 	ConstructorListAdapter(Context ctx, int resourceId, List<Players> objects) {
 		super( ctx, resourceId, objects );
@@ -33,66 +29,56 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 	@Override
 	public View getView (int position, View convertView, @NonNull ViewGroup parent ) {
 		if (convertView == null) convertView = inflater.inflate( resource, null );
-		Players p = getItem( position );
-		TextView name = (TextView) convertView.findViewById(R.id.tvInfo1);
-		ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView1);
+		final Players p = getItem( position );
 		if (p != null) {
-			String text = p.getName();
-			name.setText(text);
-			TextView[] tvs = new TextView[5];
-			int[] ids = new int[]{R.id.ivKill, R.id.ivDeath, R.id.ivLive, R.id.ivGates, R.id.ivLaps};
-			for (int i = 0; i < 5; i++) tvs[i] = (TextView) convertView.findViewById(ids[i]);
-			if (MainActivity.raceType != p.getRaceType()) {
-				p.setRaceType(MainActivity.raceType);
-				switch (MainActivity.raceType) {
-					case 1:
-						tvs[0].setScaleX(0);
-						tvs[1].setScaleX(0);
-						tvs[2].setScaleX(0);
-						tvs[3].setScaleX(1);
-						tvs[4].setScaleX(1);
-						break;
-					case 2:
-						tvs[0].setScaleX(1);
-						tvs[1].setScaleX(1);
-						if (MainActivity.raceLivesNumber > 0) tvs[2].setScaleX(1);
-						else tvs[2].setScaleX(0);
-						tvs[3].setScaleX(1);
-						tvs[4].setScaleX(1);
-						break;
-					case 3:
-						tvs[0].setScaleX(1);
-						tvs[1].setScaleX(1);
-						if (MainActivity.raceLivesNumber > 0) tvs[2].setScaleX(1);
-						else tvs[2].setScaleX(0);
-						tvs[3].setScaleX(0);
-						tvs[4].setScaleX(0);
-						break;
-					case 4:
-						tvs[0].setScaleX(1);
-						tvs[1].setScaleX(0);
-						tvs[2].setScaleX(0);
-						tvs[3].setScaleX(0);
-						tvs[4].setScaleX(0);
-						break;
-				}
-			}
-		}
-		String uri = "drawable/truck";
-		if (p != null) {
+			TextView ivKill = (TextView) convertView.findViewById(R.id.ivKill);
+			TextView ivDeath = (TextView) convertView.findViewById(R.id.ivDeath);
+			TextView ivLive = (TextView) convertView.findViewById(R.id.ivLive);
+			TextView ivGates = (TextView) convertView.findViewById(R.id.ivGates);
+			TextView ivLaps = (TextView) convertView.findViewById(R.id.ivLaps);
+			TextView tvName = (TextView) convertView.findViewById(R.id.tvInfo1);
+			String name = p.getName();
+			tvName.setText(name);
+			ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView1);
+			String uri = "drawable/truck";
 			int playerPosition = MainActivity.mPlayersList.indexOf(p);
-			if (p.isFinish() && playerPosition < 3) {
-				uri = positions[playerPosition];
-				anim = true;
+			if (p.isFinish() && playerPosition < 3) uri = positions[playerPosition];
+			int imageResource = context.getResources().getIdentifier(uri, null, context.getPackageName());
+			if (Build.VERSION.SDK_INT < 22) imageView.setImageDrawable(context.getResources().getDrawable(imageResource));
+			else imageView.setImageDrawable(context.getDrawable(imageResource));
+			switch (MainActivity.raceType) { // 3 = LIVES
+				case 1: // RACE NO GUNS - 45
+					setString(ivGates,p.getNextGate());
+					setString(ivLaps,p.getTotalLaps());
+					break;
+				case 2: // RACE WITH GUNS - 1245+3
+					setString(ivKill,p.getTotalKills());
+					setString(ivDeath,p.getTotalDeaths());
+					if (MainActivity.raceLivesNumber > 0) setString(ivLive,p.getLives());
+					setString(ivGates,p.getNextGate());
+					setString(ivLaps,p.getTotalLaps());
+					break;
+				case 3: // BATTLE - 12+3
+					setString(ivKill,p.getTotalKills());
+					setString(ivDeath,p.getTotalDeaths());
+					if (MainActivity.raceLivesNumber > 0) setString(ivLive,p.getLives());
+					break;
+				case 4: // HUNTING - 1
+					setString(ivKill,p.getTotalKills());
+					break;
 			}
 		}
-        int imageResource = context.getResources().getIdentifier(uri, null, context.getPackageName());
-		Drawable image;
-		if (Build.VERSION.SDK_INT < 22) image = context.getResources().getDrawable(imageResource);
-		else image = context.getDrawable(imageResource);
-		imageView.setImageDrawable(image);
-		if (anim) ViewAnimator.animate(imageView).bounce().wobble().repeatCount(-1).start();
 		return convertView;
+	}
+
+	private void setString(TextView tv, int i) {
+		String s = "";
+		if (i < 10) {
+			s += i;
+			s += " ";
+		} else s += i;
+		tv.setText(s);
+		if (tv.getVisibility() == View.INVISIBLE) tv.setVisibility(View.VISIBLE);
 	}
 }
 

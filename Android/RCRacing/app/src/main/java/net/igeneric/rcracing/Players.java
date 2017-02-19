@@ -60,6 +60,10 @@ class Players implements Comparable<Players> {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     void addTotalGates(int gate) {
         if (this.nextGate == 1 && gate == 1) {
             this.totalLaps++;

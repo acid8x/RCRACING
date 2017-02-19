@@ -20,7 +20,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".debugActivity"
+            android:name=".DebugActivity"
+            android:theme="@android:style/Theme.Holo.Light.Panel">
+        </activity>
+        <activity
+            android:name=".DialogActivity"
             android:theme="@android:style/Theme.Holo.Light.Panel">
         </activity>
         <activity

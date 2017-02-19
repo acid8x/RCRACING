@@ -5,11 +5,13 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
-public class debugActivity extends Activity implements View.OnClickListener{
+public class DebugActivity extends Activity implements View.OnClickListener{
 
-    private Button b1,b2,b3,b4,b5;
+    private Button b1,b2,b3,b4,b5,b6,b7,b8;
     private static int state = 0;
+    private LinearLayout ll;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,6 +31,13 @@ public class debugActivity extends Activity implements View.OnClickListener{
         b4.setOnClickListener(this);
         b5 = (Button) findViewById(R.id.button5);
         b5.setOnClickListener(this);
+        b6 = (Button) findViewById(R.id.button6);
+        b6.setOnClickListener(this);
+        b7 = (Button) findViewById(R.id.button7);
+        b7.setOnClickListener(this);
+        b8 = (Button) findViewById(R.id.button8);
+        b8.setOnClickListener(this);
+        ll = (LinearLayout) findViewById(R.id.ll2);
     }
 
     @Override
@@ -40,14 +49,14 @@ public class debugActivity extends Activity implements View.OnClickListener{
             b2.setText("G");
             b3.setText("K");
             b4.setText("Z");
-            b5.setVisibility(View.GONE);
+            ll.setVisibility(View.GONE);
         }
         else if (state == 1) {
-            b1.setText("0");
-            b2.setText("1");
-            b3.setVisibility(View.GONE);
-            b4.setVisibility(View.GONE);
-            b5.setVisibility(View.GONE);
+            b1.setText("1");
+            b2.setText("2");
+            b3.setText("3");
+            b4.setText("4");
+            ll.setVisibility(View.VISIBLE);
         }
         else {
             setResult(Activity.RESULT_OK);

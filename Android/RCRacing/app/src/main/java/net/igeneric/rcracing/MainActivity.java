@@ -18,6 +18,7 @@ import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -170,9 +171,51 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     list1 = mPlayersList.subList(0, 3);
                     list2 = mPlayersList.subList(3, mPlayersList.size());
                     listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list1));
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            Players o = (Players) parent.getItemAtPosition(position);
+                            int Id = o.getId();
+                            String Name = o.getName();
+                            Intent serverIntent = new Intent(MainActivity.this, DialogActivity.class);
+                            serverIntent.putExtra("ID", Id);
+                            serverIntent.putExtra("TYPE", 2);
+                            serverIntent.putExtra("TITLE", "ENTER NEW NAME");
+                            serverIntent.putExtra("NAME", Name);
+                            startActivityForResult(serverIntent, Constants.ACTION_REQUEST_DIALOG);
+                        }
+                    });
                     listView2.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list2));
+                    listView2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            Players o = (Players) parent.getItemAtPosition(position);
+                            int Id = o.getId();
+                            String Name = o.getName();
+                            Intent serverIntent = new Intent(MainActivity.this, DialogActivity.class);
+                            serverIntent.putExtra("ID", Id);
+                            serverIntent.putExtra("TYPE", 2);
+                            serverIntent.putExtra("TITLE", "ENTER NEW NAME");
+                            serverIntent.putExtra("NAME", Name);
+                            startActivityForResult(serverIntent, Constants.ACTION_REQUEST_DIALOG);
+                        }
+                    });
                 } else {
                     listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, mPlayersList));
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            Players o = (Players) parent.getItemAtPosition(position);
+                            int Id = o.getId();
+                            String Name = o.getName();
+                            Intent serverIntent = new Intent(MainActivity.this, DialogActivity.class);
+                            serverIntent.putExtra("ID", Id);
+                            serverIntent.putExtra("TYPE", 2);
+                            serverIntent.putExtra("TITLE", "ENTER NEW NAME");
+                            serverIntent.putExtra("NAME", Name);
+                            startActivityForResult(serverIntent, Constants.ACTION_REQUEST_DIALOG);
+                        }
+                    });
                 }
             }
         });
@@ -287,7 +330,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.buttonDEBUG) {
-            Intent intent = new Intent(getApplicationContext(), debugActivity.class);
+            Intent intent = new Intent(getApplicationContext(), DebugActivity.class);
             startActivityForResult(intent, Constants.ACTION_REQUEST_DEBUG);
         }
     }

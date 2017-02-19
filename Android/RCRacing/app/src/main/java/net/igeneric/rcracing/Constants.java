@@ -9,6 +9,7 @@ interface Constants {
     int MY_DATA_CHECK_CODE = 2;
     int ACTION_REQUEST_SETUP = 3;
     int ACTION_REQUEST_DEBUG = 4;
+    int ACTION_REQUEST_DIALOG = 5;
 
     String ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE";
     String EXTRA_DATA = "EXTRA_DATA";
