@@ -16,7 +16,6 @@ class Players implements Comparable<Players> {
     private boolean finish;
     private boolean dead;
     private long currentLap;
-    private int raceType;
 
     Players(int id) {
         this.id = id;
@@ -60,7 +59,7 @@ class Players implements Comparable<Players> {
         return name;
     }
 
-    public void setName(String name) {
+    void setName(String name) {
         this.name = name;
     }
 
@@ -69,7 +68,7 @@ class Players implements Comparable<Players> {
             this.totalLaps++;
             if (this.currentLap != 0) {
                 this.lastLap = (int)((System.currentTimeMillis() - this.currentLap)/1000);
-                MainActivity.say("Truck number " + this.id + " finish lap " + this.totalLaps + " in " + this.lastLap + "seconds");
+                MainActivity.say(this.name + " finish lap " + this.totalLaps + " in " + this.lastLap + "seconds");
                 this.currentLap = System.currentTimeMillis();
             } else this.currentLap = System.currentTimeMillis();
             if (this.totalLaps == MainActivity.raceLapsNumber) this.finish = true;
@@ -119,19 +118,7 @@ class Players implements Comparable<Players> {
         return lives;
     }
 
-    long getLastLap() {
-        return lastLap;
-    }
-
     boolean isDead() {
         return dead;
-    }
-
-    public int getRaceType() {
-        return raceType;
-    }
-
-    public void setRaceType(int raceType) {
-        this.raceType = raceType;
     }
 }

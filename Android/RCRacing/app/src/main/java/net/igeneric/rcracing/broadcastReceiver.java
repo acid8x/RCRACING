@@ -79,10 +79,10 @@ public class broadcastReceiver extends BroadcastReceiver {
         int positionNow = MainActivity.mPlayersList.indexOf(p) + 1;
         if (positionBefore != positionNow) {
             String pos;
-            if (positionNow == 1) pos = "Truck number " + id + " is now in first position";
-            else if (positionNow == 2) pos = "Truck number " + id + " is now in second position";
-            else if (positionNow == 3) pos = "Truck number " + id + " is now in third position";
-            else pos = "Truck number " + id + " is now in position number " + positionNow;
+            if (positionNow == 1) pos = p.getName() + " is now in first position";
+            else if (positionNow == 2) pos = p.getName() + " is now in second position";
+            else if (positionNow == 3) pos = p.getName() + " is now in third position";
+            else pos = p.getName() + " is now in position number " + positionNow;
             MainActivity.say(pos);
         }
         if (p.isFinish() && !p.isDead()) {

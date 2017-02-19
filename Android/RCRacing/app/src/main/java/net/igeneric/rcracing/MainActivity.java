@@ -99,12 +99,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     } else if (raceType == 3) {
                         text += "Search & Destroy\nFirst to make " + raceKillsNumber + " kills";
                         if (raceLivesNumber > -1) text += ", with " + raceLivesNumber + " lives each";
+                    } else if (raceType == 4) {
+                        text += "Hunting\nFirst to make " + raceKillsNumber + " kills";
                     }
                     rt.setText(text);
                     startService(new Intent(getBaseContext(), BTService.class));
-                    listView.setAlpha(1);
                     updateUI();
                 } else onDestroy();
+                listView.setAlpha(1);
                 break;
             case Constants.ACTION_REQUEST_DEBUG:
                 final char[] dataArray = debugString.toCharArray();
@@ -125,6 +127,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 ttsInit = true;
                 Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
                 startActivityForResult(intent, Constants.ACTION_REQUEST_SETUP);
+                break;
+            case Constants.ACTION_REQUEST_DIALOG:
+                if (resultCode == Activity.RESULT_OK) {
+                    int getId = data.getExtras().getInt("ID");
+                    Players p = getPlayers(getId);
+                    String name = "" + data.getExtras().getString("NAME");
+                    if (p != null && !name.equals("")) p.setName(name);
+                    updateUI();
+                }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -175,14 +186,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             Players o = (Players) parent.getItemAtPosition(position);
-                            int Id = o.getId();
-                            String Name = o.getName();
-                            Intent serverIntent = new Intent(MainActivity.this, DialogActivity.class);
-                            serverIntent.putExtra("ID", Id);
-                            serverIntent.putExtra("TYPE", 2);
-                            serverIntent.putExtra("TITLE", "ENTER NEW NAME");
-                            serverIntent.putExtra("NAME", Name);
-                            startActivityForResult(serverIntent, Constants.ACTION_REQUEST_DIALOG);
+                            changeName(o);
                         }
                     });
                     listView2.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list2));
@@ -190,14 +194,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             Players o = (Players) parent.getItemAtPosition(position);
-                            int Id = o.getId();
-                            String Name = o.getName();
-                            Intent serverIntent = new Intent(MainActivity.this, DialogActivity.class);
-                            serverIntent.putExtra("ID", Id);
-                            serverIntent.putExtra("TYPE", 2);
-                            serverIntent.putExtra("TITLE", "ENTER NEW NAME");
-                            serverIntent.putExtra("NAME", Name);
-                            startActivityForResult(serverIntent, Constants.ACTION_REQUEST_DIALOG);
+                            changeName(o);
                         }
                     });
                 } else {
@@ -206,19 +203,28 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             Players o = (Players) parent.getItemAtPosition(position);
-                            int Id = o.getId();
-                            String Name = o.getName();
-                            Intent serverIntent = new Intent(MainActivity.this, DialogActivity.class);
-                            serverIntent.putExtra("ID", Id);
-                            serverIntent.putExtra("TYPE", 2);
-                            serverIntent.putExtra("TITLE", "ENTER NEW NAME");
-                            serverIntent.putExtra("NAME", Name);
-                            startActivityForResult(serverIntent, Constants.ACTION_REQUEST_DIALOG);
+                            changeName(o);
                         }
                     });
                 }
             }
         });
+    }
+
+    public void changeName(Players o) {
+        Intent serverIntent = new Intent(MainActivity.this, DialogActivity.class);
+        serverIntent.putExtra("ID", o.getId());
+        serverIntent.putExtra("TYPE", 1);
+        serverIntent.putExtra("TITLE", "ENTER NEW NAME");
+        serverIntent.putExtra("NAME", o.getName());
+        startActivityForResult(serverIntent, Constants.ACTION_REQUEST_DIALOG);
+    }
+
+    private Players getPlayers(int id) {
+        for (Players players : MainActivity.mPlayersList) {
+            if (players.checkId(id)) return players;
+        }
+        return null;
     }
 
     public void onInit(int initStatus) {
