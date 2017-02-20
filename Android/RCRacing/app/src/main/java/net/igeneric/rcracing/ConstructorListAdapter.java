@@ -3,6 +3,7 @@ package net.igeneric.rcracing;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +14,17 @@ import android.widget.TextView;
 import java.util.List;
 
 class ConstructorListAdapter extends ArrayAdapter<Players> {
-	private int	resource;
+	private int	resource, height;
 	private LayoutInflater inflater;
 	private Context context;
 	private String[] positions = { "drawable/gold", "drawable/silver", "drawable/copper" };
 
-	ConstructorListAdapter(Context ctx, int resourceId, List<Players> objects) {
+	ConstructorListAdapter(Context ctx, int resourceId, List<Players> objects, int heightResize) {
 		super( ctx, resourceId, objects );
 		resource = resourceId;
 		inflater = LayoutInflater.from( ctx );
 		context = ctx;
+		height = heightResize;
 	}
 
 	@NonNull
@@ -31,15 +33,24 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 		if (convertView == null) convertView = inflater.inflate( resource, null );
 		final Players p = getItem( position );
 		if (p != null) {
-			TextView ivKill = (TextView) convertView.findViewById(R.id.ivKill);
-			TextView ivDeath = (TextView) convertView.findViewById(R.id.ivDeath);
-			TextView ivLive = (TextView) convertView.findViewById(R.id.ivLive);
-			TextView ivGates = (TextView) convertView.findViewById(R.id.ivGates);
-			TextView ivLaps = (TextView) convertView.findViewById(R.id.ivLaps);
-			TextView tvName = (TextView) convertView.findViewById(R.id.tvInfo1);
+			TextView ivKill = (TextView) convertView.findViewById(R.id.tvKill);
+			TextView ivDeath = (TextView) convertView.findViewById(R.id.tvDeath);
+			TextView ivLive = (TextView) convertView.findViewById(R.id.tvLive);
+			TextView ivGates = (TextView) convertView.findViewById(R.id.tvGates);
+			TextView ivLaps = (TextView) convertView.findViewById(R.id.tvLaps);
+			TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
 			String name = p.getName();
 			tvName.setText(name);
-			ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView1);
+			if (height != -1) {
+				ivKill.setTextSize(TypedValue.COMPLEX_UNIT_DIP,height);
+				ivDeath.setTextSize(TypedValue.COMPLEX_UNIT_DIP,height);
+				ivLive.setTextSize(TypedValue.COMPLEX_UNIT_DIP,height);
+				ivGates.setTextSize(TypedValue.COMPLEX_UNIT_DIP,height);
+				ivLaps.setTextSize(TypedValue.COMPLEX_UNIT_DIP,height);
+				tvName.setTextSize(TypedValue.COMPLEX_UNIT_DIP,height);
+			}
+
+			ImageView imageView = (ImageView) convertView.findViewById(R.id.ivLogo);
 			String uri = "drawable/truck";
 			int playerPosition = MainActivity.mPlayersList.indexOf(p);
 			if (p.isFinish() && playerPosition < 3) uri = positions[playerPosition];

@@ -1,128 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:padding="5dp"
     android:orientation="horizontal"
-    android:background="@xml/list_selector"
-    tools:layout_editor_absoluteY="0dp"
-    tools:layout_editor_absoluteX="0dp">
+    android:background="@xml/list_selector">
 
     <ImageView
+        android:id="@+id/ivLogo"
         android:contentDescription="@string/imageView"
-        android:id="@+id/imageView1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/truck"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/guideline3"/>
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        app:srcCompat="@drawable/truck"/>
 
+    <TableLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="3">
 
-    <TextView
-        android:id="@+id/tvInfo1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
-        app:layout_constraintRight_toLeftOf="@+id/ivGates"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="4dp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView1"
-        app:layout_constraintVertical_bias="0.0"
-        />
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
 
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:gravity="start|center_vertical"
+                android:textStyle="bold"
+                android:textAlignment="gravity"/>
 
-    <TextView
-        android:id="@+id/ivKill"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp"
-        android:background="@drawable/kills2"
-        android:textAlignment="textEnd"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView1"
-        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
-        app:layout_constraintRight_toLeftOf="@+id/ivDeath"
-        app:layout_constraintTop_toTopOf="@+id/ivDeath"/>
+            <TextView
+                android:id="@+id/tvLive"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/heart2"
+                android:gravity="end|center_vertical"
+                android:textStyle="bold"
+                android:textAlignment="gravity"/>
+        </TableRow>
 
-    <TextView
-        android:id="@+id/ivDeath"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp"
-        android:background="@drawable/deaths2"
-        android:textAlignment="textEnd"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView1"
-        app:layout_constraintHorizontal_bias="0.505"
-        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivGates"/>
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/ivLive"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp"
-        android:background="@drawable/heart2"
-        android:textAlignment="textEnd"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView1"
-        app:layout_constraintLeft_toRightOf="@+id/ivDeath"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivLaps"/>
+            <TextView
+                android:id="@+id/tvKill"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/kills2"
+                android:gravity="end|center_vertical"
+                android:textStyle="bold"
+                android:textAlignment="gravity"/>
 
-    <TextView
-        android:id="@+id/ivGates"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/gates2"
-        android:textAlignment="textEnd"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/ivDeath"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
-        app:layout_constraintRight_toRightOf="@+id/ivDeath"
-        app:layout_constraintTop_toTopOf="parent"/>
+            <TextView
+                android:id="@+id/tvDeath"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/deaths2"
+                android:gravity="end|center_vertical"
+                android:textStyle="bold"
+                android:textAlignment="gravity"/>
 
-    <TextView
-        android:id="@+id/ivLaps"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/laps2"
-        android:textAlignment="textEnd"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/ivLive"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="@+id/ivLive"
-        app:layout_constraintRight_toRightOf="@+id/ivLive"
-        app:layout_constraintTop_toTopOf="parent"/>
+            <TextView
+                android:id="@+id/tvGates"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/gates2"
+                android:gravity="end|center_vertical"
+                android:textStyle="bold"
+                android:textAlignment="gravity"/>
 
-    <android.support.constraint.Guideline
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/guideline3"
-        app:layout_constraintGuide_percent="0.3"
-        android:orientation="vertical"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="115dp"/>
+            <TextView
+                android:id="@+id/tvLaps"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/laps2"
+                android:gravity="end|center_vertical"
+                android:textStyle="bold"
+                android:textAlignment="gravity"/>
+        </TableRow>
 
-</android.support.constraint.ConstraintLayout>
+    </TableLayout>
 
+</LinearLayout>
