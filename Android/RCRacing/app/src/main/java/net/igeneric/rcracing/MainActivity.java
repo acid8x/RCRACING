@@ -36,7 +36,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     public static String debugString = "";
     public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, connected = false, ttsInit = false, isTextToSpeech = false;
-    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0, tvHeight = -1;
+    public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0;
+    public static int[] layouts = {R.layout.lv_race_without_guns,R.layout.lv_race_with_guns,R.layout.lv_battle,R.layout.lv_hunting};
     public static List<Players> mPlayersList = new ArrayList<>();
     public static List<Integer> mWinnersList = new ArrayList<>();
     public static TextToSpeech tts = null;
@@ -104,7 +105,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     }
                     rt.setText(text);
                     startService(new Intent(getBaseContext(), BTService.class));
-                    tvHeight = listView.getHeight()/56;
                     updateUI();
                 } else onDestroy();
                 break;
@@ -166,6 +166,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     public void updateUI() {
+        if (raceType == 0) return;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -181,7 +182,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     if (listView2 == null) listView2 = (ListView) findViewById(R.id.listView2);
                     list1 = mPlayersList.subList(0, 3);
                     list2 = mPlayersList.subList(3, mPlayersList.size());
-                    listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list1, tvHeight));
+                    listView.setAdapter(new ConstructorListAdapter(getBaseContext(), layouts[raceType-1], list1));
                     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -189,7 +190,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                             changeName(o);
                         }
                     });
-                    listView2.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, list2, tvHeight));
+                    listView2.setAdapter(new ConstructorListAdapter(getBaseContext(), layouts[raceType-1], list2));
                     listView2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -198,7 +199,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                         }
                     });
                 } else {
-                    listView.setAdapter(new ConstructorListAdapter(getBaseContext(), R.layout.listview_row_item, mPlayersList, tvHeight));
+                    listView.setAdapter(new ConstructorListAdapter(getBaseContext(), layouts[raceType-1], mPlayersList));
                     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

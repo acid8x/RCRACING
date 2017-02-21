@@ -126,7 +126,10 @@ public class SetupActivity extends Activity {
                         break;
                     case "WEAPONS ":
                         tts = "WEAPONS ";
-                        if (!tb.isChecked()) tts += "DE";
+                        if (!tb.isChecked()) {
+                            tts += "DE";
+                            MainActivity.raceType = 1;
+                        } else MainActivity.raceType = 2;
                         tts += "ACTIVATED";
                         break;
                     default:
