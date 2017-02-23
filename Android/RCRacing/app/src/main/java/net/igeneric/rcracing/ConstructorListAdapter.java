@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
@@ -29,6 +30,9 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 	@Override
 	public View getView (int position, View convertView, @NonNull ViewGroup parent ) {
 		if (convertView == null) convertView = inflater.inflate( resource, null );
+        int height = parent.getMeasuredHeight();
+        if (MainActivity.landscape) height/=3;
+        else height/=5;
 		final Players p = getItem( position );
 		if (p != null) {
 			switch (MainActivity.raceType) { // 3 = LIVES
@@ -57,6 +61,7 @@ class ConstructorListAdapter extends ArrayAdapter<Players> {
 			if (Build.VERSION.SDK_INT < 22) imageView.setImageDrawable(context.getResources().getDrawable(imageResource));
 			else imageView.setImageDrawable(context.getDrawable(imageResource));
 		}
+		convertView.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, height));
 		return convertView;
 	}
 

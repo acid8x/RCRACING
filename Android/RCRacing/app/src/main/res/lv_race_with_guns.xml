@@ -3,15 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="86dp"
-    android:layout_margin="2dp"
-    android:background="@xml/list_selector">
+    android:layout_height="wrap_content"
+    android:background="@xml/list_selector"
+    android:padding="5dp"
+    android:layout_margin="5dp">
 
     <ImageView
         android:id="@+id/ivTruck"
-        android:layout_width="82dp"
-        android:layout_height="82dp"
-        android:layout_margin="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:contentDescription="@string/imageView"
         app:srcCompat="@drawable/truck"/>
 
@@ -28,7 +28,6 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_margin="2dp"
             android:orientation="horizontal">
 
             <TextView
@@ -36,11 +35,15 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="3"
-                android:gravity="center_vertical"
-                android:textAlignment="gravity"
-                android:textAllCaps="true"
-                android:textSize="26sp"
-                android:textStyle="bold|italic"/>
+                android:textAlignment="textStart"/>
+
+            <TextView
+                android:id="@+id/tvLive"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textAlignment="textEnd"
+                android:background="@drawable/heart"/>
 
         </LinearLayout>
 
@@ -48,31 +51,39 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_margin="2dp"
             android:orientation="horizontal">
 
-            <Space
+            <TextView
+                android:id="@+id/tvGates"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textAlignment="textEnd"
+                android:background="@drawable/gates"/>
+
+            <TextView
+                android:id="@+id/tvLaps"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textAlignment="textEnd"
+                android:background="@drawable/laps"/>
 
             <TextView
                 android:id="@+id/tvKill"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/kills"
-                android:gravity="center_vertical|end"
-                android:paddingStart="2dp"
-                android:paddingEnd="2dp"
-                android:textAlignment="gravity"
-                android:textSize="22sp"
-                android:textStyle="bold"/>
+                android:textAlignment="textEnd"
+                android:background="@drawable/kills"/>
 
-            <Space
+            <TextView
+                android:id="@+id/tvDeath"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"/>
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textAlignment="textEnd"
+                android:background="@drawable/deaths"/>
 
         </LinearLayout>
 
