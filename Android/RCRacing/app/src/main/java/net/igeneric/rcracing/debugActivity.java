@@ -9,7 +9,7 @@ import android.widget.LinearLayout;
 
 public class DebugActivity extends Activity implements View.OnClickListener{
 
-    private Button b1,b2,b3,b4,b5,b6,b7,b8;
+    private Button b1,b2,b3,b4;
     private static int state = 0;
     private LinearLayout ll;
 
@@ -29,13 +29,13 @@ public class DebugActivity extends Activity implements View.OnClickListener{
         b3.setOnClickListener(this);
         b4 = (Button) findViewById(R.id.button4);
         b4.setOnClickListener(this);
-        b5 = (Button) findViewById(R.id.button5);
+        Button b5 = (Button) findViewById(R.id.button5);
         b5.setOnClickListener(this);
-        b6 = (Button) findViewById(R.id.button6);
+        Button b6 = (Button) findViewById(R.id.button6);
         b6.setOnClickListener(this);
-        b7 = (Button) findViewById(R.id.button7);
+        Button b7 = (Button) findViewById(R.id.button7);
         b7.setOnClickListener(this);
-        b8 = (Button) findViewById(R.id.button8);
+        Button b8 = (Button) findViewById(R.id.button8);
         b8.setOnClickListener(this);
         ll = (LinearLayout) findViewById(R.id.ll2);
     }
