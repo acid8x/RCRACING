@@ -63,12 +63,16 @@ class Players implements Comparable<Players> {
         this.name = name;
     }
 
+    public int getLastLap() {
+        return lastLap;
+    }
+
     void addTotalGates(int gate) {
         if (this.nextGate == 1 && gate == 1) {
             this.totalLaps++;
             if (this.currentLap != 0) {
-                this.lastLap = (int)((System.currentTimeMillis() - this.currentLap)/1000);
-                MainActivity.say(this.name + " finish lap " + this.totalLaps + " in " + this.lastLap + "seconds");
+                this.lastLap = (int)((System.currentTimeMillis() - this.currentLap)/10);
+                MainActivity.say(this.name + " finish lap " + this.totalLaps + " in " + this.lastLap/100 + "seconds");
                 this.currentLap = System.currentTimeMillis();
             } else this.currentLap = System.currentTimeMillis();
             if (this.totalLaps == MainActivity.raceLapsNumber) this.finish = true;

@@ -10,7 +10,7 @@ struct hPayload { char command; int argument; };
 struct cPayload { int X; int Y; bool LB; bool RB; bool configButton; };
 
 /******************/
-#define CAR_NODE 05
+#define CAR_NODE 04
 /******************/
 
 Pin led[3]{ Pin(A0),Pin(A1),Pin(A2) }; // R, G, B
@@ -19,7 +19,7 @@ Pin FWR = Pin(6);
 Pin REV = Pin(5);
 
 #if CAR_NODE < 5
-int Steering = SERVO_PIN_B;
+int Steering = SERVO_PIN_A;
 int CONTROLLER_NODE = CAR_NODE + 010;
 #else
 int Steering = -1;

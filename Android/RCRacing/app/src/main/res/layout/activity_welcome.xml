@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/w1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:fontFamily="sans-serif"
+        android:alpha="0"
+        android:textSize="60sp"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:text="@string/w1t"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/w2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_toStartOf="@+id/w1"
+        android:alpha="0"
+        android:fontFamily="sans-serif"
+        android:textSize="72sp"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:text="@string/w2t"/>
+
+    <TextView
+        android:id="@+id/w3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/w1"
+        android:alpha="0"
+        android:layout_centerInParent="true"
+        android:fontFamily="sans-serif"
+        android:textSize="24sp"
+        android:background="#f000"
+        android:textColor="#ffff"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="@string/w3t"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/w4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:alpha="0"
+        android:fontFamily="cursive"
+        android:textSize="60sp"
+        android:text="@string/w4t"
+        android:textStyle="bold"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/wiv1"
+        android:alpha="0"
+        android:layout_centerInParent="true"
+        android:contentDescription="@string/imageView"
+        android:src="@drawable/logo1"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/wiv2"
+        android:alpha="0"
+        android:layout_centerInParent="true"
+        android:contentDescription="@string/imageView"
+        android:src="@drawable/logo2"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/wiv3"
+        android:alpha="0"
+        android:layout_centerInParent="true"
+        android:contentDescription="@string/imageView"
+        android:src="@drawable/logo3"/>
+
+</RelativeLayout>

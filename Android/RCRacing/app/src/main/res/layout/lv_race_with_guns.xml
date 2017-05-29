@@ -27,8 +27,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
             android:layout_margin="2dp"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
             <TextView
@@ -49,8 +49,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/heart"
                 android:gravity="center_vertical|end"
-                android:paddingStart="2dp"
                 android:paddingEnd="2dp"
+                android:paddingStart="2dp"
                 android:textAlignment="gravity"
                 android:textSize="22sp"
                 android:textStyle="bold"/>
@@ -60,8 +60,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
             android:layout_margin="2dp"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
             <TextView
@@ -71,8 +71,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/gates"
                 android:gravity="center_vertical|end"
-                android:paddingStart="2dp"
                 android:paddingEnd="2dp"
+                android:paddingStart="2dp"
                 android:textAlignment="gravity"
                 android:textSize="22sp"
                 android:textStyle="bold"/>
@@ -84,8 +84,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/laps"
                 android:gravity="center_vertical|end"
-                android:paddingStart="2dp"
                 android:paddingEnd="2dp"
+                android:paddingStart="2dp"
                 android:textAlignment="gravity"
                 android:textSize="22sp"
                 android:textStyle="bold"/>
@@ -97,8 +97,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/kills"
                 android:gravity="center_vertical|end"
-                android:paddingStart="2dp"
                 android:paddingEnd="2dp"
+                android:paddingStart="2dp"
                 android:textAlignment="gravity"
                 android:textSize="22sp"
                 android:textStyle="bold"/>
@@ -110,8 +110,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/deaths"
                 android:gravity="center_vertical|end"
-                android:paddingStart="2dp"
                 android:paddingEnd="2dp"
+                android:paddingStart="2dp"
                 android:textAlignment="gravity"
                 android:textSize="22sp"
                 android:textStyle="bold"/>

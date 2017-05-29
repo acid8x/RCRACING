@@ -12,27 +12,29 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".WelcomeActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
+            android:name=".MainActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
+        <activity
             android:name=".DebugActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
-        </activity>
+            android:theme="@android:style/Theme.Holo.Light.Panel"/>
         <activity
             android:name=".DialogActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
-        </activity>
+            android:theme="@android:style/Theme.Holo.Light.Panel"/>
         <activity
             android:name=".SetupActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel">
-        </activity>
+            android:theme="@android:style/Theme.Holo.Light.Panel"/>
         <service android:name=".BTService"/>
-        <receiver android:name=".broadcastReceiver"
+        <receiver
+            android:name=".broadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="ACTION_DATA_AVAILABLE"/>

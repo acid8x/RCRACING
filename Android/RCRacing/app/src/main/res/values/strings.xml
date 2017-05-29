@@ -19,5 +19,8 @@
     <string name="back">Back</string>
     <string name="count">START 10sec\nCOUNTDOWN</string>
     <string name="ok">OK</string>
-    <string name="cancel">CANCEL</string>
+    <string name="w2t">i</string>
+    <string name="w1t">Generic</string>
+    <string name="w3t">ADVANCED TECHNOLOGY</string>
+    <string name="w4t">presents</string>
 </resources>
