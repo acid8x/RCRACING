@@ -16,6 +16,6 @@ interface Constants {
     UUID UUID_BLE_HM10_RX_TX = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
     UUID UUID_BLE_HM10_SERVICE = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
 
-    boolean DEV_MODE = true;
+    boolean DEV_MODE = false;
 
 }
