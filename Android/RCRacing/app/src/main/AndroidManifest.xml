@@ -24,9 +24,6 @@
             android:name=".MainActivity"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
         <activity
-            android:name=".DebugActivity"
-            android:theme="@android:style/Theme.Holo.Light.Panel"/>
-        <activity
             android:name=".DialogActivity"
             android:theme="@android:style/Theme.Holo.Light.Panel"/>
         <activity

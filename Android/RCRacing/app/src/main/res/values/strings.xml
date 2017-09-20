@@ -13,7 +13,7 @@
     <string name="sb10">10</string>
     <string name="sb20">20</string>
     <string name="sb30">30</string>
-    <string name="start">Start</string>
+    <string name="start">START</string>
     <string name="spinner_title">Select Race Type</string>
     <string name="next">Next</string>
     <string name="back">Back</string>
@@ -21,6 +21,6 @@
     <string name="ok">OK</string>
     <string name="w2t">i</string>
     <string name="w1t">Generic</string>
-    <string name="w3t">ADVANCED TECHNOLOGY</string>
+    <string name="w3t">ADVANCED TECHNOLOGIES</string>
     <string name="w4t">presents</string>
 </resources>

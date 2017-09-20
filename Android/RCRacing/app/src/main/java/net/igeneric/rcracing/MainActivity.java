@@ -17,9 +17,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,9 +33,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends Activity implements TextToSpeech.OnInitListener, View.OnClickListener {
+public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
 
-    public static String debugString = "";
     public static boolean hasFocus = true, broadcastUpdateRegistered = false, running = false, landscape = false, connected = false, ttsInit = false, isTextToSpeech = false;
     public static int permissionsGranted = 0, activityInfo, raceType = 0, raceLapsNumber = 2, raceGatesNumber = 4, raceKillsNumber = 10, raceLivesNumber = 0;
     public static int[] layouts = {R.layout.lv_race_without_guns,R.layout.lv_race_with_guns,R.layout.lv_battle,R.layout.lv_hunting};
@@ -44,7 +44,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private Drawable dConnected, dDisconnected;
     private ListView listView, listView2 = null;
     private ImageView connectionState;
-    private Button buttonDEBUG;
     private BTService mBTService = null;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -54,11 +53,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            if (!Constants.DEV_MODE) {
-                mBTService = ((BTService.LocalBinder) iBinder).getService();
-                if (!mBTService.initialize()) onDestroy();
-                mBTService.scanLeDevice();
-            }
+            mBTService = ((BTService.LocalBinder) iBinder).getService();
+            if (!mBTService.initialize()) onDestroy();
+            mBTService.scanLeDevice();
         }
     };
     private BroadcastReceiver broadcastUpdate = new BroadcastReceiver() {
@@ -88,7 +85,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 break;
             case Constants.ACTION_REQUEST_SETUP:
                 if (resultCode == Activity.RESULT_OK) {
-                    TextView rt = (TextView) findViewById(R.id.tvRaceType);
+                    TextView rt = findViewById(R.id.tvRaceType);
                     String text = "";
                     if (raceType < 3) {
                         if (raceType == 2) {
@@ -107,14 +104,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     startService(new Intent(getBaseContext(), BTService.class));
                     updateUI();
                 } else onDestroy();
-                break;
-            case Constants.ACTION_REQUEST_DEBUG:
-                final char[] dataArray = debugString.toCharArray();
-                if (dataArray.length == 3) {
-                    final Intent intent = new Intent(Constants.ACTION_DATA_AVAILABLE);
-                    intent.putExtra(Constants.EXTRA_DATA, dataArray);
-                    sendBroadcast(intent);
-                }
                 break;
             case Constants.MY_DATA_CHECK_CODE:
                 if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
@@ -170,7 +159,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (Constants.DEV_MODE) if (buttonDEBUG.getVisibility() == View.INVISIBLE) buttonDEBUG.setVisibility(View.VISIBLE);
                 if (BTService.mConnected != connected) {
                     connected = BTService.mConnected;
                     if (connected) connectionState.setImageDrawable(dConnected);
@@ -179,7 +167,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 }
                 if (landscape && mPlayersList.size() > 3) {
                     List<Players> list1, list2;
-                    if (listView2 == null) listView2 = (ListView) findViewById(R.id.listView2);
+                    if (listView2 == null) listView2 = findViewById(R.id.listView2);
                     list1 = mPlayersList.subList(0, 3);
                     list2 = mPlayersList.subList(3, mPlayersList.size());
                     listView.setAdapter(new ConstructorListAdapter(getBaseContext(), layouts[raceType-1], list1));
@@ -240,6 +228,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         int orientation = getResources().getConfiguration().orientation;
         int rotation = getWindowManager().getDefaultDisplay().getRotation();
         if (orientation == 2) {
@@ -254,6 +243,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         setRequestedOrientation(activityInfo);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (savedInstanceState != null && savedInstanceState.containsKey("SCALE")) {
+            float scale = savedInstanceState.getFloat("SCALE");
+        }
         if (Build.VERSION.SDK_INT >= 21) {
             dConnected = getDrawable(R.drawable.connected);
             dDisconnected = getDrawable(R.drawable.disconnected);
@@ -261,14 +253,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             dConnected = getResources().getDrawable(R.drawable.connected);
             dDisconnected = getResources().getDrawable(R.drawable.disconnected);
         }
-        listView = (ListView) findViewById(R.id.listView);
+        listView = findViewById(R.id.listView);
         Collections.sort(mPlayersList);
-        if (Constants.DEV_MODE) {
-            buttonDEBUG = (Button) findViewById(R.id.buttonDEBUG);
-            buttonDEBUG.setOnClickListener(this);
-        }
-        ImageView ivLogo = (ImageView) findViewById(R.id.ivLogo);
-        connectionState = (ImageView) findViewById(R.id.ivBT);
+        ImageView ivLogo = findViewById(R.id.ivLogo);
+        connectionState = findViewById(R.id.ivBT);
         ViewAnimator.animate(ivLogo).waitForHeight().translationX(-2000, 0).alpha(0, 1).duration(1000).decelerate()
                 .thenAnimate(connectionState).scale(5,1).alpha(0,1).duration(500).start();
     }
@@ -278,11 +266,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         super.onResume();
         hasFocus = true;
         Intent intent;
-        if (!Constants.DEV_MODE) if (BTService.mBluetoothAdapter == null || !BTService.mBluetoothAdapter.isEnabled()) {
+        if (BTService.mBluetoothAdapter == null || !BTService.mBluetoothAdapter.isEnabled()) {
             intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, Constants.ACTION_REQUEST_ENABLE);
         }
-        if (!Constants.DEV_MODE) if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             onDestroy();
         }
         if (Build.VERSION.SDK_INT >= 23 && permissionsGranted < 2) {
@@ -331,13 +319,5 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     @Override
     public void onBackPressed() {
         onDestroy();
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.buttonDEBUG) {
-            Intent intent = new Intent(getApplicationContext(), DebugActivity.class);
-            startActivityForResult(intent, Constants.ACTION_REQUEST_DEBUG);
-        }
     }
 }
