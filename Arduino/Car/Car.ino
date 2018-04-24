@@ -10,7 +10,7 @@ struct hPayload { char command; int argument; };
 struct cPayload { int X; int Y; bool LB; bool RB; bool configButton; };
 
 /******************/
-#define CAR_NODE 04
+#define CAR_NODE 02
 /******************/
 
 Pin led[3]{ Pin(A0),Pin(A1),Pin(A2) }; // R, G, B
@@ -155,9 +155,11 @@ void handle_controller(int X, int Y, bool LB, bool RB, bool configButton) {
 }
 
 void UpdateSpeed(int value) {
+	int i = oldSpeed - value;
+	if (i < 0) i *= -1;
   if (stopY) value = 0;
-  else if (value == oldSpeed) return;
-  else oldSpeed = value;
+  else if (i < 8) return;
+  oldSpeed = value;
   if (reverseStop) {
     if (reverseTimer > 333) reverseStop = false;
     else value = reverseValue;

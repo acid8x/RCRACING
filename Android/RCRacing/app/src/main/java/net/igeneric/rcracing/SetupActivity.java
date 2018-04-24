@@ -12,6 +12,7 @@ import android.widget.NumberPicker;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.github.florent37.viewanimator.ViewAnimator;
@@ -309,5 +310,27 @@ public class SetupActivity extends Activity {
     private void getView(final View view) {
         view.setAlpha(0);
         ViewAnimator.animate(view).translationY(-500, 0).scale(0, 1).alpha(0, 1).duration(500).andAnimate(button).alpha(0, 1).duration(500).andAnimate(buttonBack).alpha(0, 1).duration(500).start();
+    }
+
+    boolean doubleBackToExitPressedOnce = false;
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            setResult(Activity.RESULT_CANCELED);
+            finish();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
     }
 }

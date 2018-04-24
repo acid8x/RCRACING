@@ -1,4 +1,3 @@
-#include <SoftwareSerial.h>
 #include <RF24Network.h>
 #include <RF24.h>
 #include <elapsedMillis.h>
@@ -13,8 +12,6 @@ elapsedMillis timer;
 
 #if GATE == 1
 #define Channel 115
-
-SoftwareSerial mySerial(7, 8);
 
 RF24 radio(9, 10);
 RF24Network network(radio);
@@ -35,7 +32,7 @@ String packetsArray = "";
 
 void setup(void) {
 #if GATE == 1
-	mySerial.begin(9600);
+	Serial.begin(9600);
 	radio.begin();
 	radio.setDataRate(RF24_250KBPS);
 	radio.setRetries(0, 15);
@@ -50,8 +47,8 @@ void loop(void) {
 #if GATE == 1
 	network.update();
 	nRF_receive();
-	if (mySerial.available() > 0) {
-		char inChar = (char)mySerial.read();
+	if (Serial.available() > 0) {
+		char inChar = (char)Serial.read();
 		if (inChar == '&') {
 			read = true;
 			inputString = "";
@@ -119,7 +116,7 @@ void nRF_receive(void) {
 		message += header.from_node;
 		message += payload.command;
 		message += payload.argument;
-		mySerial.println(message);
+		Serial.println(message);
 	}
 }
 #endif

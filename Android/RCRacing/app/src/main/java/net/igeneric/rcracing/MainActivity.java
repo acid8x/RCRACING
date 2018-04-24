@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
@@ -107,7 +108,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 break;
             case Constants.MY_DATA_CHECK_CODE:
                 if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
-                    tts = new TextToSpeech(this, this);
+                    tts = new TextToSpeech(this, this, "com.google.android.tts");
                 } else {
                     Intent installTTSIntent = new Intent();
                     installTTSIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
@@ -125,6 +126,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     if (p != null && !name.equals("")) p.setName(name);
                     updateUI();
                 }
+                break;
+            case Constants.ACTION_REQUEST_WELCOME:
+                if (resultCode == Activity.RESULT_OK) {
+                    ImageView ivLogo = findViewById(R.id.ivLogo);
+                    ViewAnimator.animate(ivLogo).waitForHeight().translationX(-2000, 0).alpha(0, 1).duration(1000).decelerate()
+                            .thenAnimate(connectionState).scale(5, 1).alpha(0, 1).duration(500).start();
+                } else onDestroy();
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -243,9 +251,6 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         setRequestedOrientation(activityInfo);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (savedInstanceState != null && savedInstanceState.containsKey("SCALE")) {
-            float scale = savedInstanceState.getFloat("SCALE");
-        }
         if (Build.VERSION.SDK_INT >= 21) {
             dConnected = getDrawable(R.drawable.connected);
             dDisconnected = getDrawable(R.drawable.disconnected);
@@ -255,10 +260,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         }
         listView = findViewById(R.id.listView);
         Collections.sort(mPlayersList);
-        ImageView ivLogo = findViewById(R.id.ivLogo);
         connectionState = findViewById(R.id.ivBT);
-        ViewAnimator.animate(ivLogo).waitForHeight().translationX(-2000, 0).alpha(0, 1).duration(1000).decelerate()
-                .thenAnimate(connectionState).scale(5,1).alpha(0,1).duration(500).start();
+        startActivityForResult(new Intent(MainActivity.this, WelcomeActivity.class), Constants.ACTION_REQUEST_WELCOME);
     }
 
     @Override
@@ -316,8 +319,24 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         super.onDestroy();
     }
 
+    boolean doubleBackToExitPressedOnce = false;
+
     @Override
     public void onBackPressed() {
-        onDestroy();
+        if (doubleBackToExitPressedOnce) {
+            onDestroy();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
     }
 }

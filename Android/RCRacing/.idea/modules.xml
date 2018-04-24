@@ -3,9 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RCRacing.iml" filepath="$PROJECT_DIR$/RCRacing.iml" />
-      <module fileurl="file://$PROJECT_DIR$/RCRacing.iml" filepath="$PROJECT_DIR$/RCRacing.iml" />
+      <module fileurl="file://C:\Users\ACiD8 Xtreme\Documents\GitHub\RCRACING\Android\RCRacing\RCRacing.iml" filepath="C:\Users\ACiD8 Xtreme\Documents\GitHub\RCRACING\Android\RCRacing\RCRacing.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Users\ACiD8 Xtreme\Documents\GitHub\RCRACING\Android\RCRacing\app\app.iml" filepath="C:\Users\ACiD8 Xtreme\Documents\GitHub\RCRACING\Android\RCRacing\app\app.iml" />
     </modules>
   </component>
 </project>
